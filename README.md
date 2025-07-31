@@ -310,7 +310,7 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 
 ## 🔄 Version History
 
-### **v2.0.0 - Plugin Architecture Edition**
+### **v0.0.0 - Plugin Architecture Edition**
 - ✅ **Multi-tool suite** with plugin architecture
 - ✅ **Tool Manager** with automatic discovery
 - ✅ **Layout Optimizer** with middle-out positioning
@@ -319,9 +319,6 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 - ✅ **Composition framework** for modular development
 - ✅ **Security-enhanced** architecture throughout
 - ✅ **Professional UI** with context-sensitive help
-
-### **v1.0.0 - Foundation Release**
-- ✅ Initial report merger functionality
 - ✅ PBIR format support
 - ✅ Basic UI framework
 - ✅ Core security features
