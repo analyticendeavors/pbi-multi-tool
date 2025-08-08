@@ -413,6 +413,13 @@ class AdvancedPageCopyEngine:
                 page_data_json['name'] = new_page_id  # Internal name matches directory
                 page_data_json['displayName'] = new_display_name
                 
+                # CRITICAL: Update pageBinding.name to ensure uniqueness (fixes Power BI validation error)
+                if 'pageBinding' in page_data_json and 'name' in page_data_json['pageBinding']:
+                    # Generate new unique pageBinding name
+                    new_page_binding_id = str(uuid.uuid4()).replace('-', '')[:20]
+                    page_data_json['pageBinding']['name'] = new_page_binding_id
+                    self.log_callback(f"     📝 Updated pageBinding.name: {new_page_binding_id}")
+                
                 # CRITICAL: Ensure 'section' matches 'name' (Power BI requirement)
                 if 'section' in page_data_json:
                     page_data_json['section'] = new_page_id
