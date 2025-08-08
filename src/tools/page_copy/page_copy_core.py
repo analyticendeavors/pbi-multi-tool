@@ -41,6 +41,45 @@ class AdvancedPageCopyEngine:
     def _default_log(self, message: str) -> None:
         print(message)
     
+    def _validate_pbip_structure_for_page_copy(self, report_dir: Path, report_name: str) -> None:
+        """Validation for page copy operations - accepts both thin reports and reports with semantic models."""
+        errors = []
+        
+        # Check .Report directory structure
+        if not report_dir.exists():
+            errors.append(f"{report_name} .Report directory not found: {report_dir}")
+            raise ValidationError("\n• ".join(errors))
+        
+        # NOTE: Skip semantic model check - page copy works for both thin reports and reports with local semantic models
+        
+        # Check required directories and files for basic PBIP structure
+        required_paths = [
+            (report_dir / "definition", "definition directory"),
+            (report_dir / "definition" / "report.json", "report.json file"),
+            (report_dir / ".pbi", ".pbi directory"),
+            (report_dir / ".platform", ".platform file")
+        ]
+        
+        for path, description in required_paths:
+            if not path.exists():
+                errors.append(f"{report_name} missing {description}: {path}")
+        
+        # Validate key JSON files
+        if (report_dir / "definition" / "report.json").exists():
+            try:
+                self.validation_service.validate_json_structure(report_dir / "definition" / "report.json")
+            except ValidationError as e:
+                errors.append(f"{report_name} has invalid report.json: {str(e)}")
+        
+        if (report_dir / ".platform").exists():
+            try:
+                self.validation_service.validate_json_structure(report_dir / ".platform", "platform")
+            except ValidationError as e:
+                errors.append(f"{report_name} has invalid .platform file: {str(e)}")
+        
+        if errors:
+            raise ValidationError("Report structure validation failed:\n• " + "\n• ".join(errors))
+    
     def analyze_report_pages(self, report_path: str) -> Dict[str, Any]:
         """
         Analyze report to find pages that have bookmarks
@@ -57,8 +96,8 @@ class AdvancedPageCopyEngine:
         # Get report directory
         report_dir = Path(clean_path).parent / f"{Path(clean_path).stem}.Report"
         
-        # Validate structure
-        self.validation_service.validate_thin_report_structure(report_dir, Path(clean_path).stem)
+        # Validate structure - use page copy validation (allows semantic models)
+        self._validate_pbip_structure_for_page_copy(report_dir, Path(clean_path).stem)
         
         self.log_callback("✅ Report structure validated")
         
