@@ -223,9 +223,6 @@ class MyComponent(ToolComponent):
 ### **Q: Can I use just one tool from the suite?**
 **A:** Yes! Each tool operates independently within the tabbed interface. Just use the tab you need.
 
-### **Q: How do I add custom tools?**
-**A:** Create a new tool class in the `/tools` directory following the plugin pattern. The Tool Manager will automatically discover it.
-
 ### **Q: What file formats are supported?**
 **A:** Only PBIP files in enhanced report format (PBIR). Traditional .pbix files are NOT supported by any tool in the suite.
 
