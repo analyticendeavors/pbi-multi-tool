@@ -2,7 +2,7 @@
 
 **Professional Power BI toolkit with plugin architecture for comprehensive report management**
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Version](https://img.shields.io/badge/version-0.0.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
@@ -26,18 +26,27 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Smart bookmark and measure merging**
 - **Professional validation and audit logging**
 
-### 🎯 **Advanced Page Copy Tool**
-- **Cross-report page copying** with dependency tracking
-- **Visual element preservation** including custom themes
-- **Bookmark and navigation maintenance**
-- **Selective content transfer capabilities**
-
 ### 📐 **PBIP Layout Optimizer**
 - **Middle-out layout optimization** for model diagrams
 - **Relationship-aware table positioning** with family grouping
 - **Automatic table categorization** (fact, dimension, bridge, reference)
 - **Chain-aware alignment** for optimal visual flow
 - **Dimension optimization** with collision detection
+
+### 🧹 **Report Cleanup Tool**
+- **Intelligent cleanup** of unused report elements for optimization
+- **Theme cleanup** - removes unused themes and theme variants
+- **Custom visual cleanup** - eliminates unused custom visual imports
+- **Bookmark cleanup** - detects and removes orphaned bookmarks
+- **Selective operations** - choose specific cleanup types or run comprehensive scan
+- **Safety features** - detailed analysis before cleanup with backup recommendations
+
+### 🎯 **Advanced Page Copy Tool**
+- **Intelligent page duplication** within the same report
+- **Bookmark preservation** - maintains all associated bookmarks
+- **Visual element preservation** including custom themes
+- **Automatic conflict resolution** with "(Copy)" naming conventions
+- **Selective content transfer** capabilities
 
 ### 🔧 **Plugin Architecture**
 - **Automatic tool discovery** and registration
@@ -127,19 +136,30 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 5. **Execute** merge with real-time progress tracking
 6. **Open** your consolidated report in Power BI Desktop
 
-### 🎯 **Advanced Page Copy Tool**
-1. **Choose** source report (.pbip file)
-2. **Choose** destination report (.pbip file)
-3. **Select** specific pages to copy
-4. **Configure** copy options (themes, bookmarks, etc.)
-5. **Execute** copy operation with dependency tracking
-
 ### 📐 **Layout Optimizer Tool**
 1. **Select** PBIP file to optimize
 2. **Choose** optimization strategy (Middle-Out recommended)
 3. **Configure** canvas dimensions if needed
 4. **Execute** optimization for improved model diagram layout
 5. **Review** optimized table positioning and relationships
+
+### 🧹 **Report Cleanup Tool**
+1. **Select** report (.pbip file) to analyze
+2. **Choose** cleanup operations:
+   - **Theme Cleanup**: Remove unused themes and variants
+   - **Custom Visual Cleanup**: Remove unused custom visual imports
+   - **Bookmark Cleanup**: Remove orphaned bookmarks with no references
+   - **Comprehensive Scan**: Analyze all cleanup opportunities
+3. **Review** detailed analysis results before proceeding
+4. **Execute** selected cleanup operations with real-time progress
+5. **Verify** optimized report with reduced file size and improved performance
+
+### 🎯 **Advanced Page Copy Tool**
+1. **Choose** source report (.pbip file)
+2. **Analyze** report to identify pages with bookmarks
+3. **Select** specific pages to duplicate
+4. **Execute** copy operation with bookmark preservation
+5. **Review** duplicated pages with "(Copy)" naming
 
 ---
 
@@ -155,8 +175,9 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
    │   └── composition/ (Component system)
    └── 🛠️ tools/ (Plugin Tools)
        ├── report_merger/
-       ├── page_copy/
-       └── pbip_layout_optimizer/
+       ├── pbip_layout_optimizer/
+       ├── report_cleanup/
+       └── page_copy/
 ```
 
 ### **Component Composition**
@@ -171,7 +192,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ### **Adding New Tools**
 1. Create new directory under `/tools`
-2. Implement tool class inheriting from `EnhancedBaseExternalTool`
+2. Implement tool class inheriting from `BaseTool`
 3. Tool Manager automatically discovers and registers
 4. Add UI components using composition framework
 
@@ -202,14 +223,14 @@ class MyComponent(ToolComponent):
 ### **Q: Can I use just one tool from the suite?**
 **A:** Yes! Each tool operates independently within the tabbed interface. Just use the tab you need.
 
-### **Q: How do I add custom tools?**
-**A:** Create a new tool class in the `/tools` directory following the plugin pattern. The Tool Manager will automatically discover it.
-
 ### **Q: What file formats are supported?**
 **A:** Only PBIP files in enhanced report format (PBIR). Traditional .pbix files are NOT supported by any tool in the suite.
 
 ### **Q: Will this integrate with Power BI Desktop?**
 **A:** Yes, the suite can be configured as an External Tool in Power BI Desktop for seamless workflow integration.
+
+### **Q: Is it safe to use Report Cleanup on production reports?**
+**A:** The Report Cleanup tool includes comprehensive analysis before making changes and recommends backing up reports first. Always test in development environments before production use.
 
 ---
 
@@ -231,6 +252,11 @@ class MyComponent(ToolComponent):
 - Check the application logs for specific error details
 - Verify all required Python packages are installed
 - Ensure file permissions allow tool operation
+
+**\"Cleanup operation failed\"**
+- Ensure the report is not open in Power BI Desktop
+- Verify write permissions for the target directory
+- Check that the report structure is valid PBIR format
 
 **Security warnings**
 - The executable is built with security-enhanced architecture
@@ -306,41 +332,11 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 - **Continuous improvement** based on client feedback
 - **Expert support** from certified Power BI professionals
 
----
-
-## 🔄 Version History
-
-### **v0.0.0 - Plugin Architecture Edition**
-- ✅ **Multi-tool suite** with plugin architecture
-- ✅ **Tool Manager** with automatic discovery
-- ✅ **Layout Optimizer** with middle-out positioning
-- ✅ **Advanced Page Copy** with dependency tracking
-- ✅ **Enhanced Report Merger** with improved conflict resolution
-- ✅ **Composition framework** for modular development
-- ✅ **Security-enhanced** architecture throughout
-- ✅ **Professional UI** with context-sensitive help
-- ✅ PBIR format support
-- ✅ Basic UI framework
-- ✅ Core security features
-
----
-
 ## 🎯 Roadmap & Future Tools
 
 ### **Planned Tools**
+- **⚡ Advanced Incremental Refresh** - XMLA endpoint operations for Power BI Premium
 - **📈 Report Analytics Tool** - Comprehensive report analysis and metrics
-- **🔄 Model Optimizer** - Data model performance optimization
-- **📋 Documentation Generator** - Automatic report documentation
-- **🎨 Theme Manager** - Advanced theme management and customization
-- **🔍 Content Auditor** - Report content validation and compliance checking
-
-### **Architecture Enhancements**
-- **Configuration-driven** tool assembly
-- **Plugin marketplace** integration
-- **Advanced logging** and monitoring
-- **API integration** for enterprise workflows
-
----
 
 ## 🌟 Show Your Support
 
@@ -355,4 +351,4 @@ If you find this tool suite useful:
 
 **Made with ❤️ by [Reid Havens](https://www.analyticendeavors.com) for the Power BI professional community**
 
-*Empowering data professionals with enterprise-grade tools for Power BI excellence*"
+*Empowering data professionals with enterprise-grade tools for Power BI excellence*
