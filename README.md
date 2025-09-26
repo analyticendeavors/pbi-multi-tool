@@ -291,7 +291,7 @@ We welcome contributions to the tool suite! Please see our [Contributing Guide](
 - **Microsoft Power BI** is a trademark of Microsoft Corporation
 
 ### **License**
-This software is released under the MIT License. See [LICENSE](LICENSE) for full terms and conditions.
+This software is released under the MIT License. See [LICENSE.txt](LICENSE) for full terms and conditions.
 
 ---
 
