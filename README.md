@@ -123,7 +123,6 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ## 🚀 Installation & Quick Start
 
-### Option 1: Standalone Executable (Recommended)
 1. **Download** `AE Power BI Multi-Tool.exe` from the [Releases page](../../releases)
 2. **Run directly** - no installation required
 3. **Launch** and select your tool from the tabbed interface
@@ -205,49 +204,6 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 - **ThreadingComponent**: Background processing with proper closures
 - **ProgressComponent**: User feedback and progress indication
 - **IntelligentSizing**: Advanced width calculations with content-type detection
-
----
-
-## 🔧 Development & Extension
-
-### **Adding New Tools**
-1. Create new directory under `/tools`
-2. Implement tool class inheriting from `EnhancedBaseExternalTool`
-3. Tool Manager automatically discovers and registers
-4. Add UI components using composition framework
-
-### **Custom Components**
-```python
-from core.composition import ToolComponent
-
-class MyComponent(ToolComponent):
-    def initialize(self) -> bool:
-        # Custom logic here
-        self.mark_initialized()
-        return True
-```
-
-### **Plugin Architecture Benefits**
-- **Modular development** - each tool is independent
-- **Easy testing** - components can be tested in isolation
-- **Extensible design** - add tools without modifying core
-- **Professional structure** - enterprise-grade codebase organization
-
----
-
-## 🧠 Advanced Features Deep Dive
-
-### **Enhanced Matrix Logic**
-- **Hierarchy detection**: Distinguishes parent (Year, Quarter) from child (Q1, Jan) levels
-- **Layout optimization**: Different handling for Compact vs Outline matrices
-- **Content-aware sizing**: Recognizes dates, currency, percentages automatically
-- **Smart compression**: Less aggressive (0.95x vs 0.9x) for better readability
-
-### **Auto-fit Intelligence**
-- **Font-aware calculations** using actual visual font settings
-- **Content type detection** for dates, currency, hierarchy levels
-- **3-line wrapping prevention** with intelligent maximum widths
-- **Visual type awareness** for matrix vs table optimizations
 
 ---
 
@@ -343,7 +299,7 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 
 **AE Power BI Multi-Tool** is developed by [Analytic Endeavors](https://www.analyticendeavors.com), a consulting firm specializing in business intelligence and advanced Power BI solutions.
 
-**Founded by Reid Havens**, we create professional tools and provide expert consulting services for organizations looking to maximize their Power BI investments.
+**Founded by Reid Havens & Steve Campbell**, we create professional tools and provide expert consulting services for organizations looking to maximize their Power BI investments.
 
 ### **Our Services**
 - **Power BI consulting** and custom development
@@ -363,14 +319,14 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 
 ## 🔄 Version History
 
-### **v1.1.0 - Enhanced Column Widths Edition** ⭐ *Current*
+### **v1.0.0 - Enhanced Report Cleanup Edition** ⭐ *Current*
 - ✅ **Enhanced Table Column Widths** - Fit to Totals defaults with intelligent width calculation
 - ✅ **Matrix optimization** - Hierarchy-aware spacing and improved compression
 - ✅ **Content detection** - Smart recognition of dates, currency, hierarchy levels
 - ✅ **Complex date support** - Enhanced handling for "EOW: 01/07/24" formats
 - ✅ **Professional UI** - Streamlined configuration with intelligent defaults
 
-### **v1.0.0 - Plugin Architecture Edition**
+### **v0.0.0 - Beta Version**
 - ✅ **Multi-tool suite** with plugin architecture
 - ✅ **Tool Manager** with automatic discovery
 - ✅ **Layout Optimizer** with middle-out positioning
@@ -379,28 +335,6 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 - ✅ **Report Cleanup** tool for optimization
 - ✅ **Security-enhanced** architecture throughout
 - ✅ **Professional UI** with context-sensitive help
-
----
-
-## 🎯 Roadmap & Future Enhancements
-
-### **Planned Column Width Enhancements**
-- **📈 Advanced Width Intelligence** - Smart width analysis with pattern recognition
-- **🔄 Content-Aware Optimization** - Dynamic sizing based on actual data content
-- **🎨 Theme Intelligence** - AI-driven theme recommendations and generation
-- **📋 Content Analysis** - Smart documentation and compliance checking
-
-### **Upcoming Tools**
-- **🔍 Content Auditor** - Report content validation and compliance checking
-- **📊 Performance Analyzer** - Advanced performance metrics and optimization
-- **🎯 Usage Analytics** - Report usage patterns and optimization recommendations
-- **🔗 Dependency Mapper** - Visual dependency tracking and impact analysis
-
-### **Architecture Enhancements**
-- **Advanced AI integration** throughout all tools
-- **Configuration-driven** tool assembly
-- **Plugin marketplace** integration
-- **API integration** for enterprise workflows
 
 ---
 
