@@ -2,7 +2,7 @@
 
 **Professional Power BI toolkit with plugin architecture for comprehensive report management**
 
-![Version](https://img.shields.io/badge/version-0.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
@@ -26,6 +26,12 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Smart bookmark and measure merging**
 - **Professional validation and audit logging**
 
+### 🎯 **Advanced Page Copy Tool**
+- **Cross-report page copying** with dependency tracking
+- **Visual element preservation** including custom themes
+- **Bookmark and navigation maintenance**
+- **Selective content transfer capabilities**
+
 ### 📐 **PBIP Layout Optimizer**
 - **Middle-out layout optimization** for model diagrams
 - **Relationship-aware table positioning** with family grouping
@@ -34,19 +40,19 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Dimension optimization** with collision detection
 
 ### 🧹 **Report Cleanup Tool**
-- **Intelligent cleanup** of unused report elements for optimization
-- **Theme cleanup** - removes unused themes and theme variants
-- **Custom visual cleanup** - eliminates unused custom visual imports
-- **Bookmark cleanup** - detects and removes orphaned bookmarks
-- **Selective operations** - choose specific cleanup types or run comprehensive scan
-- **Safety features** - detailed analysis before cleanup with backup recommendations
+- **Comprehensive report sanitization** and optimization
+- **Unused element removal** (measures, columns, relationships)
+- **Performance optimization** through cleanup operations
+- **Report health analysis** and recommendations
 
-### 🎯 **Advanced Page Copy Tool**
-- **Intelligent page duplication** within the same report
-- **Bookmark preservation** - maintains all associated bookmarks
-- **Visual element preservation** including custom themes
-- **Automatic conflict resolution** with "(Copy)" naming conventions
-- **Selective content transfer** capabilities
+### 📊 **Table Column Widths Tool** 
+- **Fit to Totals optimization** - Intelligent sizing to prevent total value wrapping (default for measures)
+- **Auto-fit column calculations** with font-aware sizing (default for categorical)
+- **Enhanced matrix optimization** with hierarchy-aware spacing
+- **Content-type detection** (dates, currency, hierarchy levels)
+- **Matrix-specific improvements** (intelligent compression, enhanced currency padding)
+- **Complex date format support** (enhanced spacing for "EOW: 01/07/24" formats)
+- **Professional width standardization** across tables and matrices
 
 ### 🔧 **Plugin Architecture**
 - **Automatic tool discovery** and registration
@@ -56,7 +62,14 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 
 ---
 
-## ✨ Key Architecture Features
+## ✨ Enhanced Features & Intelligence
+
+### 📊 **Advanced Matrix Handling**
+- **Hierarchy-aware compression** (parent levels keep full width)
+- **Layout-specific optimizations** (Compact vs Outline matrices)
+- **Enhanced minimum widths** based on content and visual type
+- **Currency-specific adjustments** for better readability
+- **Date format intelligence** with complex pattern recognition
 
 ### 🎯 **Modern Plugin System**
 - Automatic tool discovery from `/tools` directory
@@ -92,7 +105,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 **To enable PBIR format in Power BI Desktop:**
 1. Go to **File** → **Options and settings** → **Options**
 2. Select **Preview features**
-3. Enable **\"Store reports using enhanced metadata format\"**
+3. Enable **"Store reports using enhanced metadata format"**
 4. Restart Power BI Desktop
 5. Save your reports - they will now be in .pbip format with a `.Report` folder
 
@@ -120,7 +133,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ---
 
-## 📖 Tool Usage Guide
+## 📖 Complete Tool Usage Guide
 
 ### 🏠 **Main Interface**
 - **Tabbed design** with each tool in its own tab
@@ -136,6 +149,13 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 5. **Execute** merge with real-time progress tracking
 6. **Open** your consolidated report in Power BI Desktop
 
+### 🎯 **Advanced Page Copy Tool**
+1. **Choose** source report (.pbip file)
+2. **Choose** destination report (.pbip file)
+3. **Select** specific pages to copy
+4. **Configure** copy options (themes, bookmarks, etc.)
+5. **Execute** copy operation with dependency tracking
+
 ### 📐 **Layout Optimizer Tool**
 1. **Select** PBIP file to optimize
 2. **Choose** optimization strategy (Middle-Out recommended)
@@ -144,22 +164,22 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 5. **Review** optimized table positioning and relationships
 
 ### 🧹 **Report Cleanup Tool**
-1. **Select** report (.pbip file) to analyze
-2. **Choose** cleanup operations:
-   - **Theme Cleanup**: Remove unused themes and variants
-   - **Custom Visual Cleanup**: Remove unused custom visual imports
-   - **Bookmark Cleanup**: Remove orphaned bookmarks with no references
-   - **Comprehensive Scan**: Analyze all cleanup opportunities
-3. **Review** detailed analysis results before proceeding
-4. **Execute** selected cleanup operations with real-time progress
-5. **Verify** optimized report with reduced file size and improved performance
+1. **Select** report (.pbip file) to clean
+2. **Choose** cleanup operations (unused measures, columns, etc.)
+3. **Review** cleanup recommendations
+4. **Execute** cleanup with backup creation
+5. **Verify** optimized report performance
 
-### 🎯 **Advanced Page Copy Tool**
-1. **Choose** source report (.pbip file)
-2. **Analyze** report to identify pages with bookmarks
-3. **Select** specific pages to duplicate
-4. **Execute** copy operation with bookmark preservation
-5. **Review** duplicated pages with "(Copy)" naming
+### 📊 **Table Column Widths Tool** ⭐ *Enhanced Edition*
+1. **Select** PBIP file containing tables/matrices
+2. **Scan visuals** to discover all table and matrix elements
+3. **Set width preferences** (smart defaults):
+   - **Categorical columns**: Auto-fit (intelligent width calculation)
+   - **Measure columns**: Fit to Totals (prevents wrapping, default)
+   - **Custom options**: Narrow/Medium/Wide presets or exact pixel values
+4. **Select visuals** to update (tables, matrices, or both)
+5. **Preview changes** to see calculated widths
+6. **Apply changes** for professional column standardization
 
 ---
 
@@ -172,12 +192,14 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
    ├── 🧠 core/ (Shared Components)
    │   ├── tool_manager.py (Auto-discovery)
    │   ├── enhanced_base_tool.py (Tool framework)
-   │   └── composition/ (Component system)
+   │   ├── ui_base.py (UI components)
+   │   └── constants.py (Shared constants)
    └── 🛠️ tools/ (Plugin Tools)
-       ├── report_merger/
-       ├── pbip_layout_optimizer/
-       ├── report_cleanup/
-       └── page_copy/
+       ├── 📊 report_merger/
+       ├── 🎯 page_copy/
+       ├── 📐 pbip_layout_optimizer/
+       ├── 🧹 report_cleanup/
+       └── 📊 column_width/ (Enhanced with AI)
 ```
 
 ### **Component Composition**
@@ -185,6 +207,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 - **FileInputComponent**: Path handling and file operations  
 - **ThreadingComponent**: Background processing with proper closures
 - **ProgressComponent**: User feedback and progress indication
+- **IntelligentSizing**: Advanced width calculations with content-type detection
 
 ---
 
@@ -192,7 +215,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ### **Adding New Tools**
 1. Create new directory under `/tools`
-2. Implement tool class inheriting from `BaseTool`
+2. Implement tool class inheriting from `EnhancedBaseExternalTool`
 3. Tool Manager automatically discovers and registers
 4. Add UI components using composition framework
 
@@ -215,7 +238,26 @@ class MyComponent(ToolComponent):
 
 ---
 
+## 🧠 Advanced Features Deep Dive
+
+### **Enhanced Matrix Logic**
+- **Hierarchy detection**: Distinguishes parent (Year, Quarter) from child (Q1, Jan) levels
+- **Layout optimization**: Different handling for Compact vs Outline matrices
+- **Content-aware sizing**: Recognizes dates, currency, percentages automatically
+- **Smart compression**: Less aggressive (0.95x vs 0.9x) for better readability
+
+### **Auto-fit Intelligence**
+- **Font-aware calculations** using actual visual font settings
+- **Content type detection** for dates, currency, hierarchy levels
+- **3-line wrapping prevention** with intelligent maximum widths
+- **Visual type awareness** for matrix vs table optimizations
+
+---
+
 ## ❓ Frequently Asked Questions
+
+### **Q: What's new in the enhanced Table Column Widths tool?**
+**A:** The Table Column Widths tool now includes enhanced matrix handling with hierarchy awareness, Fit to Totals as the default for measures to prevent wrapping, and Auto-fit as the default for categorical columns.
 
 ### **Q: What's the difference between this and individual tools?**
 **A:** This is a unified suite with shared components, consistent UI, and plugin architecture. All tools share security features, logging, and base functionality.
@@ -226,11 +268,8 @@ class MyComponent(ToolComponent):
 ### **Q: What file formats are supported?**
 **A:** Only PBIP files in enhanced report format (PBIR). Traditional .pbix files are NOT supported by any tool in the suite.
 
-### **Q: Will this integrate with Power BI Desktop?**
-**A:** Yes, the suite can be configured as an External Tool in Power BI Desktop for seamless workflow integration.
-
-### **Q: Is it safe to use Report Cleanup on production reports?**
-**A:** The Report Cleanup tool includes comprehensive analysis before making changes and recommends backing up reports first. Always test in development environments before production use.
+### **Q: How do I get the best results from Table Column Widths?**
+**A:** Use the default settings (Auto-fit for categorical, Fit to Totals for measures) for the most intelligent width calculations with optimal total display. These defaults prevent text wrapping in totals while providing smart sizing for field headers.
 
 ---
 
@@ -238,30 +277,20 @@ class MyComponent(ToolComponent):
 
 ### **Common Issues**
 
-**\"File format not supported\"**
+**"File format not supported"**
 - Ensure you're using .pbip files (not .pbix)
 - Enable PBIR format in Power BI Desktop settings
 - Verify .Report folders exist alongside .pbip files
 
-**\"No tools discovered\"**
+**"No visuals found" in Table Column Widths**
+- Tool only works with Table and Matrix visuals
+- Ensure your report contains tableEx or pivotTable visual types
+- Check that visuals have proper field configurations
+
+**"No tools discovered"**
 - Check that `/tools` directory exists and contains tool modules
 - Verify Python import paths are correct
-- Run `test_imports.py` to verify dependencies
-
-**\"Tool initialization failed\"**
-- Check the application logs for specific error details
-- Verify all required Python packages are installed
-- Ensure file permissions allow tool operation
-
-**\"Cleanup operation failed\"**
-- Ensure the report is not open in Power BI Desktop
-- Verify write permissions for the target directory
-- Check that the report structure is valid PBIR format
-
-**Security warnings**
-- The executable is built with security-enhanced architecture
-- Some antivirus software may flag new applications
-- All operations are logged for audit compliance
+- Run dependency checks to verify installations
 
 ---
 
@@ -294,7 +323,7 @@ class MyComponent(ToolComponent):
 We welcome contributions to the tool suite! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
 - Adding new tools to the plugin system
 - Enhancing existing components
-- Improving the architecture
+- Improving the AI intelligence systems
 - Documentation updates
 
 ---
@@ -328,15 +357,55 @@ This software is released under the MIT License. See [LICENSE](LICENSE) for full
 
 ### **Why Choose Our Tools?**
 - **Professional quality** with enterprise-grade architecture
+- **AI-enhanced intelligence** for smarter automation
 - **Real-world tested** in production environments
 - **Continuous improvement** based on client feedback
 - **Expert support** from certified Power BI professionals
 
-## 🎯 Roadmap & Future Tools
+---
 
-### **Planned Tools**
-- **⚡ Advanced Incremental Refresh** - XMLA endpoint operations for Power BI Premium
-- **📈 Report Analytics Tool** - Comprehensive report analysis and metrics
+## 🔄 Version History
+
+### **v1.1.0 - Enhanced Column Widths Edition** ⭐ *Current*
+- ✅ **Enhanced Table Column Widths** - Fit to Totals defaults with intelligent width calculation
+- ✅ **Matrix optimization** - Hierarchy-aware spacing and improved compression
+- ✅ **Content detection** - Smart recognition of dates, currency, hierarchy levels
+- ✅ **Complex date support** - Enhanced handling for "EOW: 01/07/24" formats
+- ✅ **Professional UI** - Streamlined configuration with intelligent defaults
+
+### **v1.0.0 - Plugin Architecture Edition**
+- ✅ **Multi-tool suite** with plugin architecture
+- ✅ **Tool Manager** with automatic discovery
+- ✅ **Layout Optimizer** with middle-out positioning
+- ✅ **Advanced Page Copy** with dependency tracking
+- ✅ **Enhanced Report Merger** with improved conflict resolution
+- ✅ **Report Cleanup** tool for optimization
+- ✅ **Security-enhanced** architecture throughout
+- ✅ **Professional UI** with context-sensitive help
+
+---
+
+## 🎯 Roadmap & Future Enhancements
+
+### **Planned Column Width Enhancements**
+- **📈 Advanced Width Intelligence** - Smart width analysis with pattern recognition
+- **🔄 Content-Aware Optimization** - Dynamic sizing based on actual data content
+- **🎨 Theme Intelligence** - AI-driven theme recommendations and generation
+- **📋 Content Analysis** - Smart documentation and compliance checking
+
+### **Upcoming Tools**
+- **🔍 Content Auditor** - Report content validation and compliance checking
+- **📊 Performance Analyzer** - Advanced performance metrics and optimization
+- **🎯 Usage Analytics** - Report usage patterns and optimization recommendations
+- **🔗 Dependency Mapper** - Visual dependency tracking and impact analysis
+
+### **Architecture Enhancements**
+- **Advanced AI integration** throughout all tools
+- **Configuration-driven** tool assembly
+- **Plugin marketplace** integration
+- **API integration** for enterprise workflows
+
+---
 
 ## 🌟 Show Your Support
 
@@ -349,6 +418,6 @@ If you find this tool suite useful:
 
 ---
 
-**Made with ❤️ by [Reid Havens](https://www.analyticendeavors.com) for the Power BI professional community**
+**Made with ❤️ and 🧠 AI by [Reid Havens](https://www.analyticendeavors.com) for the Power BI professional community**
 
-*Empowering data professionals with enterprise-grade tools for Power BI excellence*
+*Empowering data professionals with AI-enhanced, enterprise-grade tools for Power BI excellence*
