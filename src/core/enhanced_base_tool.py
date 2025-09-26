@@ -221,11 +221,30 @@ class EnhancedBaseExternalTool(ABC):
         root.minsize(600, 400)
         
         # Set icon if available
-        if self.config.icon_path and Path(self.config.icon_path).exists():
-            try:
-                root.iconbitmap(self.config.icon_path)
-            except Exception:
-                pass  # Icon loading is non-critical
+        if self.config.icon_path:
+            icon_path = Path(self.config.icon_path)
+            
+            # Try different path strategies for PyInstaller compatibility
+            possible_paths = [
+                icon_path,  # Original relative path
+                Path.cwd() / icon_path,  # Relative to current working dir
+                Path(__file__).parent.parent / icon_path,  # Relative to src folder
+            ]
+            
+            # If running from PyInstaller, try bundle-relative paths
+            if getattr(sys, 'frozen', False):
+                bundle_dir = Path(sys.executable).parent
+                possible_paths.append(bundle_dir / icon_path)
+                possible_paths.append(bundle_dir / "_internal" / icon_path)
+            
+            # Try each path until one works
+            for path_attempt in possible_paths:
+                if path_attempt.exists():
+                    try:
+                        root.iconbitmap(str(path_attempt))
+                        break
+                    except Exception:
+                        continue
         
         # Create status bar - REMOVED: Redundant with built-in logging systems
         # self.status_var = tk.StringVar()

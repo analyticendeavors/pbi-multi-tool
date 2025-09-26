@@ -30,10 +30,11 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         # Initialize with tool configuration
         config = ToolConfiguration(
             name="Enhanced Power BI Report Tools",
-            version="2.0.0",
+            version="1.0.0",
             description="Professional suite for Power BI report management with plugin architecture",
             author="Reid Havens",
-            website="https://www.analyticendeavors.com"
+            website="https://www.analyticendeavors.com",
+            icon_path="assets/favicon.ico"
         )
         
         super().__init__(config)
@@ -328,20 +329,12 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             width, height = new_geometry.split('x')
             width, height = int(width), int(height)
             
-            # Get screen dimensions
-            screen_width = self.root.winfo_screenwidth()
-            screen_height = self.root.winfo_screenheight()
+            # Get current window position to preserve it
+            current_x = self.root.winfo_x()
+            current_y = self.root.winfo_y()
             
-            # Calculate position to center the window
-            x = (screen_width - width) // 2
-            y = (screen_height - height) // 2
-            
-            # Ensure the window doesn't go off-screen
-            x = max(0, x)
-            y = max(0, y)
-            
-            # Apply the new geometry with centered position
-            self.root.geometry(f"{width}x{height}+{x}+{y}")
+            # Apply the new geometry while preserving current position
+            self.root.geometry(f"{width}x{height}+{current_x}+{current_y}")
             
             # Force window update
             self.root.update_idletasks()
