@@ -40,19 +40,23 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Dimension optimization** with collision detection
 
 ### 🧹 **Report Cleanup Tool**
-- **Comprehensive report sanitization** and optimization
-- **Unused element removal** (measures, columns, relationships)
-- **Performance optimization** through cleanup operations
-- **Report health analysis** and recommendations
+- **Comprehensive scanning** - Analyzes themes, custom visuals, bookmarks, and visual filters for usage
+- **Theme cleanup** - Identifies and removes unused themes from BaseThemes and RegisteredResources
+- **Custom visual management** - Distinguishes between AppSource visuals, build pane visuals, and hidden visuals
+- **Smart usage detection** - Scans all pages and visuals to determine what's actually being used
+- **Bookmark analysis** - Finds unused bookmarks and validates page references
+- **Visual filter hiding** - Option to hide all visual-level filters across the report
+- **Safe removal process** - Creates automatic backups and updates report.json references properly
 
 ### 📊 **Table Column Widths Tool** 
-- **Fit to Totals optimization** - Intelligent sizing to prevent total value wrapping (default for measures)
-- **Auto-fit column calculations** with font-aware sizing (default for categorical)
-- **Enhanced matrix optimization** with hierarchy-aware spacing
-- **Content-type detection** (dates, currency, hierarchy levels)
-- **Matrix-specific improvements** (intelligent compression, enhanced currency padding)
-- **Complex date format support** (enhanced spacing for "EOW: 01/07/24" formats)
-- **Professional width standardization** across tables and matrices
+- **Visual scanning and analysis** - Discovers all Table (tableEx) and Matrix (pivotTable) visuals in PBIP reports
+- **Field categorization** - Automatically identifies categorical fields vs measures from visual configurations
+- **Width preset options** - Narrow, Medium, Wide, Auto-fit, Fit to Totals, and Custom width settings
+- **Auto-fit calculations** - Font-aware width calculations based on actual text length and visual font settings
+- **Fit to Totals optimization** - Specialized sizing for measures to prevent total/subtotal value wrapping
+- **Enhanced matrix handling** - Hierarchy-aware spacing for Compact, Outline, and Tabular matrix layouts
+- **Content-type detection** - Intelligent recognition of dates, currency, hierarchy levels, and data patterns
+- **Selective application** - Choose individual visuals, multiple visuals, or apply to all tables/matrices
 
 ### 🔧 **Plugin Architecture**
 - **Automatic tool discovery** and registration
