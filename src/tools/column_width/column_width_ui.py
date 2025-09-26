@@ -264,9 +264,112 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
             custom_var = tk.StringVar(value="95")
             self.measure_custom_var = custom_var
         
-        # Entry box with no background styling
-        custom_entry = ttk.Entry(custom_frame, textvariable=custom_var, width=6, font=('Segoe UI', 9))
+        # Entry box with validation - using tk.Entry for background color control
+        custom_entry = tk.Entry(custom_frame, textvariable=custom_var, width=6, font=('Segoe UI', 9),
+                               relief='solid', borderwidth=1, bg='white')
         custom_entry.pack(side=tk.LEFT, padx=(8, 0))
+        
+        # Delayed validation to prevent false positives while typing
+        validation_timer = None
+        
+        def delayed_validate():
+            """Actual validation function called after delay"""
+            try:
+                value = int(custom_var.get())
+                if value < 50:  # Below minimum width
+                    # Change background to light red
+                    custom_entry.config(bg='#ffebee')
+                    # Show warning in log
+                    field_name = "categorical" if field_type == 'categorical' else "measure"
+                    self.log_message(f"⚠️ Warning: {field_name} custom width {value}px is below minimum (50px). Will be increased to 50px.")
+                else:
+                    # Reset to normal background
+                    custom_entry.config(bg='white')
+            except ValueError:
+                # Reset to normal background for non-numeric values
+                custom_entry.config(bg='white')
+        
+        def validate_custom_width(*args):
+            """Validation with delay - resets timer on each keystroke"""
+            nonlocal validation_timer
+            # Cancel any pending validation
+            if validation_timer:
+                self.frame.after_cancel(validation_timer)
+            # Schedule new validation after 800ms delay
+            validation_timer = self.frame.after(800, delayed_validate)
+        
+        custom_var.trace('w', validate_custom_width)
+    
+    def _setup_width_controls_with_custom_for_popup(self, parent: ttk.Widget, preset_var: tk.StringVar, field_type: str, visual_id: str):
+        """Setup width control widgets with custom input field for popup dialogs"""
+        
+        # Enhanced preset options
+        presets = [
+            ("Narrow", WidthPreset.NARROW.value),
+            ("Medium", WidthPreset.MEDIUM.value),
+            ("Wide", WidthPreset.WIDE.value),
+            ("Fit to Header", WidthPreset.AUTO_FIT.value),
+            ("Fit to Totals", WidthPreset.FIT_TO_TOTALS.value),
+            ("Custom", WidthPreset.CUSTOM.value)
+        ]
+        
+        for text, value in presets:
+            radio = ttk.Radiobutton(parent, text=text, variable=preset_var, value=value)
+            radio.pack(anchor=tk.W, pady=1)
+        
+        # Custom width input - single line layout
+        custom_frame = ttk.Frame(parent)
+        custom_frame.pack(anchor=tk.W, pady=(5, 0))
+        
+        # Custom label and entry on same line
+        ttk.Label(custom_frame, text="Custom (px):", font=('Segoe UI', 9)).pack(side=tk.LEFT)
+        
+        # Get or create per-visual custom variables
+        if visual_id not in self.visual_config_vars:
+            self._create_per_visual_config_vars(visual_id)
+        
+        # Get/create custom variable for this visual
+        if f'{field_type}_custom' not in self.visual_config_vars[visual_id]:
+            default_value = "105" if field_type == 'categorical' else "95"
+            self.visual_config_vars[visual_id][f'{field_type}_custom'] = tk.StringVar(value=default_value)
+        
+        custom_var = self.visual_config_vars[visual_id][f'{field_type}_custom']
+        
+        # Entry box with validation - using tk.Entry for background color control
+        custom_entry = tk.Entry(custom_frame, textvariable=custom_var, width=6, font=('Segoe UI', 9),
+                               relief='solid', borderwidth=1, bg='white')
+        custom_entry.pack(side=tk.LEFT, padx=(8, 0))
+        
+        # Delayed validation to prevent false positives while typing
+        validation_timer = None
+        
+        def delayed_validate_popup():
+            """Actual validation function called after delay for popup"""
+            try:
+                value = int(custom_var.get())
+                if value < 50:  # Below minimum width
+                    # Change background to light red
+                    custom_entry.config(bg='#ffebee')
+                    # Show warning in log
+                    field_name = "categorical" if field_type == 'categorical' else "measure"
+                    self.log_message(f"⚠️ Warning: Per-visual {field_name} custom width {value}px is below minimum (50px). Will be increased to 50px.")
+                else:
+                    # Reset to normal background
+                    custom_entry.config(bg='white')
+            except ValueError:
+                # Reset to normal background for non-numeric values
+                custom_entry.config(bg='white')
+        
+        def validate_popup_custom_width(*args):
+            """Validation with delay - resets timer on each keystroke"""
+            nonlocal validation_timer
+            # Cancel any pending validation
+            if validation_timer:
+                self.frame.after_cancel(validation_timer)
+            # Schedule new validation after 800ms delay
+            validation_timer = self.frame.after(800, delayed_validate_popup)
+        
+        custom_var.trace('w', validate_popup_custom_width)
     
     def _setup_visual_selection_section(self, parent):
         """Setup visual selection section"""
@@ -515,7 +618,7 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
         """Show per-visual configuration dialog"""
         config_window = tk.Toplevel(self.main_app.root)
         config_window.title(f"Configure: {visual_info.visual_name}")
-        config_window.geometry("550x335")
+        config_window.geometry("550x395")
         config_window.resizable(False, False)
         config_window.transient(self.main_app.root)
         config_window.grab_set()
@@ -553,13 +656,13 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
         cat_frame = ttk.LabelFrame(config_frame, text="📊 Categorical Columns", padding="10")
         cat_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
         
-        self._setup_width_controls_simple(cat_frame, visual_vars['categorical_preset'])
+        self._setup_width_controls_with_custom_for_popup(cat_frame, visual_vars['categorical_preset'], 'categorical', visual_info.visual_id)
         
         # Measure columns (right)
         measure_frame = ttk.LabelFrame(config_frame, text="📈 Measure Columns", padding="10")
         measure_frame.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
         
-        self._setup_width_controls_simple(measure_frame, visual_vars['measure_preset'])
+        self._setup_width_controls_with_custom_for_popup(measure_frame, visual_vars['measure_preset'], 'measure', visual_info.visual_id)
         
         # Buttons
         button_frame = ttk.Frame(main_frame)
@@ -585,7 +688,9 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
         """Create per-visual configuration variables"""
         self.visual_config_vars[visual_id] = {
             'categorical_preset': tk.StringVar(value=self.global_categorical_preset_var.get()),
-            'measure_preset': tk.StringVar(value=self.global_measure_preset_var.get())
+            'measure_preset': tk.StringVar(value=self.global_measure_preset_var.get()),
+            'categorical_custom': tk.StringVar(value="105"),
+            'measure_custom': tk.StringVar(value="95")
         }
     
     def _apply_per_visual_config(self, visual_id: str, config_window):
@@ -608,8 +713,21 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
             measure_setting = visual_vars['measure_preset'].get()
             
             self.log_message(f"⚙️ Applied per-visual configuration for {visual_info.visual_name if visual_info else visual_id}")
-            self.log_message(f"📊 Categorical columns: {cat_setting}")
-            self.log_message(f"📈 Measure columns: {measure_setting}")
+            
+            # Show categorical setting with custom value if needed
+            if cat_setting == WidthPreset.CUSTOM.value:
+                cat_custom = visual_vars.get('categorical_custom', tk.StringVar(value="105")).get()
+                self.log_message(f"📊 Categorical columns: {cat_setting} ({cat_custom}px)")
+            else:
+                self.log_message(f"📊 Categorical columns: {cat_setting}")
+            
+            # Show measure setting with custom value if needed
+            if measure_setting == WidthPreset.CUSTOM.value:
+                measure_custom = visual_vars.get('measure_custom', tk.StringVar(value="95")).get()
+                self.log_message(f"📈 Measure columns: {measure_setting} ({measure_custom}px)")
+            else:
+                self.log_message(f"📈 Measure columns: {measure_setting}")
+            
             self.log_message("ℹ️ This visual will use its own width settings when changes are applied")
         
         config_window.destroy()
@@ -627,6 +745,12 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
             self.global_categorical_preset_var.set(cat_setting)
             self.global_measure_preset_var.set(measure_setting)
             
+            # Copy custom values too
+            if 'categorical_custom' in visual_vars:
+                self.categorical_custom_var.set(visual_vars['categorical_custom'].get())
+            if 'measure_custom' in visual_vars:
+                self.measure_custom_var.set(visual_vars['measure_custom'].get())
+            
             # Switch back to global view
             self._switch_to_global_config()
             
@@ -634,8 +758,20 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
             self._update_tree_display()
             
             self.log_message("🌐 Per-visual configuration copied to global settings")
-            self.log_message(f"📊 Categorical columns: {cat_setting}")
-            self.log_message(f"📈 Measure columns: {measure_setting}")
+            
+            # Show settings with custom values if applicable
+            if cat_setting == WidthPreset.CUSTOM.value:
+                cat_custom = visual_vars.get('categorical_custom', tk.StringVar(value="105")).get()
+                self.log_message(f"📊 Categorical columns: {cat_setting} ({cat_custom}px)")
+            else:
+                self.log_message(f"📊 Categorical columns: {cat_setting}")
+            
+            if measure_setting == WidthPreset.CUSTOM.value:
+                measure_custom = visual_vars.get('measure_custom', tk.StringVar(value="95")).get()
+                self.log_message(f"📈 Measure columns: {measure_setting} ({measure_custom}px)")
+            else:
+                self.log_message(f"📈 Measure columns: {measure_setting}")
+            
             self.log_message("📝 Now showing global configuration mode")
     
     def _reset_to_global_config(self, visual_id: str, config_window):
@@ -781,6 +917,18 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
                 config = WidthConfiguration()
                 config.categorical_preset = WidthPreset(visual_vars['categorical_preset'].get())
                 config.measure_preset = WidthPreset(visual_vars['measure_preset'].get())
+                
+                # Get custom width values for this visual
+                try:
+                    config.categorical_custom = int(visual_vars['categorical_custom'].get())
+                except (ValueError, KeyError):
+                    config.categorical_custom = 105  # Default fallback
+                    
+                try:
+                    config.measure_custom = int(visual_vars['measure_custom'].get())
+                except (ValueError, KeyError):
+                    config.measure_custom = 95  # Default fallback
+                
                 configs[visual_id] = config
             else:
                 # Will use global configuration - don't add to configs dict
@@ -830,10 +978,28 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
             
         self.log_message(f"👁️ Generating preview for {len(selected_ids)} visual(s)...")
         
-        # Calculate preview data
-        preview_data = []
+        # Check for custom values below minimum and warn
         per_visual_configs = self._get_selected_visual_configs()
         global_config = self._get_global_config()
+        
+        # Warn about global custom values below minimum
+        if global_config.categorical_preset == WidthPreset.CUSTOM and global_config.categorical_custom < 50:
+            self.log_message(f"⚠️ Global categorical custom width {global_config.categorical_custom}px increased to minimum 50px")
+        if global_config.measure_preset == WidthPreset.CUSTOM and global_config.measure_custom < 50:
+            self.log_message(f"⚠️ Global measure custom width {global_config.measure_custom}px increased to minimum 50px")
+        
+        # Warn about per-visual custom values below minimum
+        for visual_id, config in per_visual_configs.items():
+            visual_info = next((v for v in self.visuals_info if v.visual_id == visual_id), None)
+            visual_name = visual_info.visual_name if visual_info else visual_id
+            
+            if config.categorical_preset == WidthPreset.CUSTOM and config.categorical_custom < 50:
+                self.log_message(f"⚠️ {visual_name}: categorical custom width {config.categorical_custom}px increased to minimum 50px")
+            if config.measure_preset == WidthPreset.CUSTOM and config.measure_custom < 50:
+                self.log_message(f"⚠️ {visual_name}: measure custom width {config.measure_custom}px increased to minimum 50px")
+        
+        # Calculate preview data
+        preview_data = []
         
         for visual_info in self.visuals_info:
             if visual_info.visual_id in selected_ids:
