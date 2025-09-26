@@ -128,13 +128,6 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 2. **Run directly** - no installation required
 3. **Launch** and select your tool from the tabbed interface
 
-### Option 2: Run from Source
-1. **Clone** this repository
-2. **Install** Python 3.8+ from [python.org](https://python.org/downloads)
-3. **Navigate** to the `builds` directory
-4. **Run** `build_ae_pbi_multi_tool.bat` to build your own executable
-5. **Or run directly** from source using `src/run_ae_multi_tool.bat`
-
 ---
 
 ## 📖 Complete Tool Usage Guide
