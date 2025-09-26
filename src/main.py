@@ -50,29 +50,50 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
     
     def _initialize_tools(self):
         """Initialize and register all tools"""
-        self.logger.log_operation("Initializing tool manager")
-        
         # Discover and register tools automatically
         registered_count = self.tool_manager.discover_and_register_tools("tools")
         
         if registered_count == 0:
             self.logger.log_security_event("No tools were discovered", "WARNING")
-        else:
-            self.logger.log_operation(f"Successfully registered {registered_count} tools")
-        
-        # Log tool status
-        status = self.tool_manager.get_status_summary()
-        self.logger.log_operation(f"Tool Manager Status: {status}")
     
     def create_ui(self) -> tk.Tk:
         """Create the main tabbed user interface with tool manager integration"""
         # Create secure UI base
         root = self.create_secure_ui_base()
         root.title(f"Enhanced Power BI Report Tools v{self.config.version}")
-        root.geometry("1250x1300")
+        
+        # Set initial size but don't position yet
+        root.geometry("1150x950")  # Start with Report Merger size since it's the first tab
         
         self._setup_main_interface(root)
+        
+        # Center the window after everything is set up
+        self._center_window(root)
+        
         return root
+    
+    def _center_window(self, window):
+        """Center the window on the screen"""
+        window.update_idletasks()  # Ensure window dimensions are calculated
+        
+        # Get window dimensions
+        window_width = window.winfo_width()
+        window_height = window.winfo_height()
+        
+        # Get screen dimensions
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+        
+        # Calculate position to center the window
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        # Ensure the window doesn't go off-screen
+        x = max(0, x)
+        y = max(0, y)
+        
+        # Set the window position
+        window.geometry(f"{window_width}x{window_height}+{x}+{y}")
     
     def _setup_main_interface(self, root):
         """Setup the main tabbed interface with tool manager"""
@@ -188,8 +209,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             # Set default tab
             self.notebook.select(0)
             
-            self.logger.log_operation(f"Created {len(self.tool_tabs)} tool tabs")
-            
         except Exception as e:
             self.logger.log_security_event(f"Failed to setup tabs: {e}", "ERROR")
             self._show_tool_error(str(e))
@@ -198,7 +217,9 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         """Reorder tabs to put most commonly used tools first"""
         desired_order = [
             "report_merger",           # Most important - should be first
-            "pbip_layout_optimizer",   # New tool - second
+            "pbip_layout_optimizer",   # Layout tool - second
+            "report_cleanup",          # New cleanup tool - third
+            "column_width",           # Column width tool - fourth
             "page_copy"               # Utility tool - last
         ]
         
@@ -262,7 +283,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         """Handle tab changes and adjust window height dynamically"""
         try:
             if not self.notebook:
-                print("DEBUG: No notebook available")
                 return
                 
             # Get current tab
@@ -270,7 +290,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             
             # Find which tool this tab belongs to by checking tab text
             current_tab_text = self.notebook.tab(current_tab_id, "text")
-            print(f"DEBUG: Current tab text: {current_tab_text}")
             
             # Map tab text to tool ID (more reliable after reordering)
             tool_id = None
@@ -280,6 +299,10 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
                 tool_id = "page_copy"
             elif "Layout Optimizer" in current_tab_text:
                 tool_id = "pbip_layout_optimizer"
+            elif "Report Cleanup" in current_tab_text:
+                tool_id = "report_cleanup"
+            elif "Table Column Widths" in current_tab_text or "Visual Cleanup" in current_tab_text:
+                tool_id = "column_width"
             else:
                 # For any other tools, try to match by checking tool tabs
                 for tid, tab in self.tool_tabs.items():
@@ -287,40 +310,45 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
                         tool_id = tid
                         break
             
-            print(f"DEBUG: Detected tool_id: {tool_id}")
-            
-            # Get current geometry before change
-            current_geometry = self.root.geometry()
-            print(f"DEBUG: Current geometry: {current_geometry}")
-            
-            # Adjust height based on tool ID
+            # Adjust height based on tool ID and center window
             if tool_id == "report_merger":
                 new_geometry = "1150x950"  # More compact initial height for Report Merger
-                print(f"DEBUG: Setting Report Merger geometry to {new_geometry}")
-                self.root.geometry(new_geometry)
             elif tool_id == "page_copy":
-                new_geometry = "1175x820"   # BACK TO ORIGINAL Page Copy height
-                print(f"DEBUG: Setting Page Copy geometry to {new_geometry}")
-                self.root.geometry(new_geometry)
+                new_geometry = "1175x820"   # Page Copy height
             elif tool_id == "pbip_layout_optimizer":
-                new_geometry = "1130x850"  # Layout Optimizer: reduced height by 200px (1050-200=850)
-                print(f"DEBUG: Setting Layout Optimizer geometry to {new_geometry}")
-                self.root.geometry(new_geometry)
+                new_geometry = "1130x850"  # Layout Optimizer height
+            elif tool_id == "report_cleanup":
+                new_geometry = "1100x1095"  # Report Cleanup height - reduced by 25px
+            elif tool_id == "column_width":
+                new_geometry = "1200x1035"  # Visual Cleanup height - optimized for compact fit with all UI elements visible
             else:
                 new_geometry = "1250x1150"   # Default height
-                print(f"DEBUG: Setting default geometry to {new_geometry} for tool {tool_id}")
-                self.root.geometry(new_geometry)
             
-            # Force window update and verify
+            # Parse the geometry to get width and height
+            width, height = new_geometry.split('x')
+            width, height = int(width), int(height)
+            
+            # Get screen dimensions
+            screen_width = self.root.winfo_screenwidth()
+            screen_height = self.root.winfo_screenheight()
+            
+            # Calculate position to center the window
+            x = (screen_width - width) // 2
+            y = (screen_height - height) // 2
+            
+            # Ensure the window doesn't go off-screen
+            x = max(0, x)
+            y = max(0, y)
+            
+            # Apply the new geometry with centered position
+            self.root.geometry(f"{width}x{height}+{x}+{y}")
+            
+            # Force window update
             self.root.update_idletasks()
             self.root.update()
-            final_geometry = self.root.geometry()
-            print(f"DEBUG: Final geometry: {final_geometry}")
                     
         except Exception as e:
-            print(f"DEBUG: Error in _on_tab_changed: {e}")
-            import traceback
-            traceback.print_exc()
+            pass  # Silently handle tab change errors
     
     def perform_tool_operation(self, **kwargs) -> bool:
         """Implementation required by EnhancedBaseExternalTool"""
@@ -351,6 +379,10 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
                 tool_id = "page_copy"
             elif "Layout Optimizer" in current_tab_text:
                 tool_id = "pbip_layout_optimizer"
+            elif "Report Cleanup" in current_tab_text:
+                tool_id = "report_cleanup"
+            elif "Table Column Widths" in current_tab_text or "Visual Cleanup" in current_tab_text:
+                tool_id = "column_width"
             else:
                 # For any other tools, try to match by checking tool tabs
                 for tid, tab in self.tool_tabs.items():
@@ -529,8 +561,6 @@ def main():
         app.run_with_tool_manager(app.tool_manager)
     except Exception as e:
         print(f"Critical Error: {e}")
-        import traceback
-        traceback.print_exc()
         
         # Show error dialog if possible
         try:

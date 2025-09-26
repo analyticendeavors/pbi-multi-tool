@@ -114,6 +114,11 @@ class BaseToolTab(ABC):
             },
             'TLabel': {
                 'background': colors['background']
+            },
+            'TCheckbutton': {
+                'background': colors['background'],
+                'foreground': colors['text_primary'],
+                'focuscolor': 'none'  # Remove focus outline
             }
         }
         
@@ -147,9 +152,27 @@ class BaseToolTab(ABC):
                              font=('Segoe UI', 10, 'bold'), 
                              foreground=AppConstants.COLORS['info']).pack(anchor=tk.W)
                 else:  # Steps
-                    ttk.Label(guide_frame, text=f"   {text}", font=('Segoe UI', 9),
-                             foreground=AppConstants.COLORS['text_secondary'], 
-                             wraplength=300).pack(anchor=tk.W, pady=1)
+                    # Handle bullet points with proper indentation for wrapped text
+                    if text.startswith('•'):
+                        # Create a frame for each bullet point to control indentation
+                        bullet_frame = ttk.Frame(guide_frame)
+                        bullet_frame.pack(anchor=tk.W, pady=1, fill=tk.X)
+                        
+                        # Bullet symbol
+                        ttk.Label(bullet_frame, text="•", font=('Segoe UI', 9),
+                                 foreground=AppConstants.COLORS['text_secondary']).pack(side=tk.LEFT, anchor=tk.N)
+                        
+                        # Text content with proper wrapping and indentation
+                        text_content = text[1:].strip()  # Remove bullet and leading space
+                        text_label = ttk.Label(bullet_frame, text=text_content, font=('Segoe UI', 9),
+                                             foreground=AppConstants.COLORS['text_secondary'], 
+                                             wraplength=280, justify=tk.LEFT)
+                        text_label.pack(side=tk.LEFT, anchor=tk.N, padx=(5, 0), fill=tk.X, expand=True)
+                    else:
+                        # Regular text
+                        ttk.Label(guide_frame, text=f"   {text}", font=('Segoe UI', 9),
+                                 foreground=AppConstants.COLORS['text_secondary'], 
+                                 wraplength=300).pack(anchor=tk.W, pady=1)
         
         # RIGHT: File input
         input_frame = ttk.Frame(content_frame)
@@ -198,11 +221,12 @@ class BaseToolTab(ABC):
         content_frame.columnconfigure(0, weight=1)
         content_frame.rowconfigure(0, weight=1)
         
-        # Log text area
+        # Log text area with horizontal scrolling and no word wrap
         log_text = scrolledtext.ScrolledText(
-            content_frame, height=12, width=85, font=('Consolas', 9), state=tk.DISABLED,
+            content_frame, height=12, width=75, font=('Consolas', 9), state=tk.DISABLED,
             bg=AppConstants.COLORS['surface'], fg=AppConstants.COLORS['text_primary'],
-            selectbackground=AppConstants.COLORS['accent'], relief='solid', borderwidth=1
+            selectbackground=AppConstants.COLORS['accent'], relief='solid', borderwidth=1,
+            wrap=tk.NONE  # Disable word wrapping to prevent text wrapping
         )
         log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
@@ -234,6 +258,70 @@ class BaseToolTab(ABC):
             'text_widget': log_text,
             'export_button': export_button,
             'clear_button': clear_button
+        }
+    
+    def create_log_section_with_options(self, parent: ttk.Widget, title: str = "📊 ANALYSIS & CLEANUP LOG") -> Dict[str, Any]:
+        """Create a log section with an options panel on the right (for cleanup tool)"""
+        log_frame = ttk.LabelFrame(parent, text=title, 
+                                 style='Section.TLabelframe', padding="15")
+        log_frame.columnconfigure(0, weight=1)
+        log_frame.rowconfigure(0, weight=1)
+        
+        # Main container for log and options side by side
+        main_container = ttk.Frame(log_frame)
+        main_container.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=5, pady=5)  # Added padding to frame
+        main_container.columnconfigure(0, weight=1)  # Log area gets most space
+        main_container.rowconfigure(0, weight=1)
+        
+        # Left side - Log area
+        log_container = ttk.Frame(main_container)
+        log_container.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 20))  # Increased padding for button space
+        log_container.columnconfigure(0, weight=1)
+        log_container.rowconfigure(0, weight=1)
+        
+        # Log text area with proper scrollbars and sizing
+        log_text = scrolledtext.ScrolledText(
+            log_container, height=10, width=55, font=('Consolas', 9), state=tk.DISABLED,  # Reduced height to ensure scrollbar visibility
+            bg=AppConstants.COLORS['surface'], fg=AppConstants.COLORS['text_primary'],
+            selectbackground=AppConstants.COLORS['accent'], relief='solid', borderwidth=1,
+            wrap=tk.NONE,  # Disable word wrapping
+            exportselection=False  # Prevent selection issues
+        )
+        log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 2), pady=(0, 2))  # Small padding for scrollbar space
+        
+        # Right side - Options area (wider to accommodate buttons)
+        options_frame = ttk.Frame(main_container)
+        options_frame.grid(row=0, column=1, sticky=(tk.N, tk.E), padx=(20, 0))  # Increased padding
+        
+        # Log controls in options area
+        log_controls = ttk.Frame(options_frame)
+        log_controls.pack(fill=tk.X, pady=(0, 20))
+        
+        # Create bound methods to avoid lambda closure issues
+        def export_log_command():
+            self._export_log(log_text)
+        
+        def clear_log_command():
+            self._clear_log(log_text)
+        
+        export_button = ttk.Button(log_controls, text="📤 Export Log", 
+                                  command=export_log_command,
+                                  style='Secondary.TButton', width=20)  # Increased width for consistency
+        export_button.pack(pady=(0, 5), fill=tk.X)
+        
+        clear_button = ttk.Button(log_controls, text="🗑️ Clear Log",
+                                 command=clear_log_command,
+                                 style='Secondary.TButton', width=20)  # Increased width for consistency
+        clear_button.pack(fill=tk.X)
+        
+        self.log_text = log_text  # Store reference for logging
+        
+        return {
+            'frame': log_frame,
+            'text_widget': log_text,
+            'export_button': export_button,
+            'clear_button': clear_button,
+            'options_frame': options_frame  # New: options area for additional content
         }
     
     def create_action_buttons(self, parent: ttk.Widget, buttons: List[Dict[str, Any]]) -> Dict[str, ttk.Button]:
