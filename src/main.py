@@ -30,7 +30,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         # Initialize with tool configuration
         config = ToolConfiguration(
             name="Enhanced Power BI Report Tools",
-            version="1.0.0",
+            version="1.1.1",
             description="Professional suite for Power BI report management with plugin architecture",
             author="Reid Havens",
             website="https://www.analyticendeavors.com",
@@ -597,9 +597,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         ttk.Label(main_frame, text="Enhanced Power BI Report Tools", 
                  font=('Segoe UI', 18, 'bold'),
                  foreground=AppConstants.COLORS['primary']).pack(pady=(10, 5))
-        ttk.Label(main_frame, text="v1.0.0 - Plugin Architecture", 
-                 font=('Segoe UI', 12),
-                 foreground=AppConstants.COLORS['text_secondary']).pack()
         
         # Tool Manager Status
         status = self.tool_manager.get_status_summary()
