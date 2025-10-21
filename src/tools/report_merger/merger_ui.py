@@ -94,7 +94,7 @@ class ReportMergerTab(BaseToolTab, FileInputMixin, ValidationMixin):
             "4. Path quotes will be automatically cleaned",
             "5. Repeat for the second report file",
             "6. Click 'Analyze Reports' to begin",
-            "⚠️ Requires PBIP format"
+            "⚠️ Requires PBIP format with TMDLs files"
         ]
         
         # Create main section frame
@@ -116,6 +116,11 @@ class ReportMergerTab(BaseToolTab, FileInputMixin, ValidationMixin):
                 ttk.Label(guide_frame, text=text, 
                          font=('Segoe UI', 10, 'bold'), 
                          foreground=AppConstants.COLORS['info']).pack(anchor=tk.W)
+            elif text.startswith("⚠️"):  # Warning line - use tk.Label for orange italic
+                tk.Label(guide_frame, text=f"   {text}", 
+                        font=('Segoe UI', 9, 'italic'),
+                        foreground='#d97706',
+                        background='#f8fafc').pack(anchor=tk.W, pady=1)
             else:  # Steps
                 ttk.Label(guide_frame, text=f"   {text}", font=('Segoe UI', 9),
                          foreground=AppConstants.COLORS['text_secondary'], 

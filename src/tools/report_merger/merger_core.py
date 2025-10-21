@@ -1584,9 +1584,21 @@ class MergerEngine:
             return entities_dict
     
     def _rebuild_pages_json(self, pages_dir: Path):
-        """Rebuild pages.json file after merging with correct schema."""
-        all_page_names = []
+        """Rebuild pages.json file after merging with correct schema and proper page order."""
+        # Load existing pages.json to preserve page order
+        pages_json_file = pages_dir / "pages.json"
+        existing_page_order = []
         
+        if pages_json_file.exists():
+            try:
+                with open(pages_json_file, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                existing_page_order = existing_data.get('pageOrder', [])
+            except:
+                pass
+        
+        # Get all current page directories
+        current_pages = set()
         for page_dir in pages_dir.iterdir():
             if page_dir.is_dir() and page_dir.name != "pages.json":
                 page_json_file = page_dir / "page.json"
@@ -1594,25 +1606,39 @@ class MergerEngine:
                     try:
                         with open(page_json_file, 'r', encoding='utf-8') as f:
                             page_data = json.load(f)
-                        all_page_names.append(page_data.get("name", page_dir.name))
+                        page_name = page_data.get("name", page_dir.name)
+                        current_pages.add(page_name)
                     except:
-                        all_page_names.append(page_dir.name)
+                        current_pages.add(page_dir.name)
         
-        if not all_page_names:
+        if not current_pages:
             return
+        
+        # Build final page order: preserve existing order, append new pages at end
+        final_page_order = []
+        
+        # First, add pages that existed before (in their original order)
+        for page_name in existing_page_order:
+            if page_name in current_pages:
+                final_page_order.append(page_name)
+                current_pages.remove(page_name)  # Remove from set so we don't add it again
+        
+        # Then append any new pages that weren't in the original order
+        # Sort new pages alphabetically for consistency
+        for page_name in sorted(current_pages):
+            final_page_order.append(page_name)
         
         # Create updated pages.json with full schema URL
         pages_data = {
             "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
-            "pageOrder": all_page_names,
-            "activePageName": all_page_names[0] if all_page_names else None
+            "pageOrder": final_page_order,
+            "activePageName": final_page_order[0] if final_page_order else None
         }
         
-        pages_json_file = pages_dir / "pages.json"
         with open(pages_json_file, 'w', encoding='utf-8') as f:
             json.dump(pages_data, f, indent=2)
         
-        self.log_callback(f"     ✅ Rebuilt pages.json with {len(all_page_names)} pages")
+        self.log_callback(f"     ✅ Rebuilt pages.json with {len(final_page_order)} pages (preserved tab order)")
     
     def _clean_non_standard_properties(self, report_dir: Path):
         """Remove any non-standard properties that cause schema validation errors."""

@@ -129,6 +129,12 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
                      foreground=AppConstants.COLORS['text_secondary'], 
                      wraplength=300).pack(anchor=tk.W, pady=1)
         
+        # Add warning text at bottom in orange/red and italicized
+        warning_label = ttk.Label(guide_frame, text="⚠️ Requires PBIP format with TMDL files",
+                                font=('Segoe UI', 9, 'italic'),
+                                foreground='#d97706')
+        warning_label.pack(anchor=tk.W, pady=(5, 0))
+        
         # RIGHT: File input
         input_frame = ttk.Frame(content_frame)
         input_frame.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.N))
@@ -1256,5 +1262,181 @@ class TableColumnWidthsTab(BaseToolTab, FileInputMixin, ValidationMixin):
     
     def show_help_dialog(self):
         """Show help dialog specific to Table Column Widths"""
-        # This method is implemented in BaseToolTab
-        pass
+        # Get the correct parent window
+        parent_window = None
+        if hasattr(self, 'main_app') and hasattr(self.main_app, 'root'):
+            parent_window = self.main_app.root
+        elif hasattr(self, 'master'):
+            parent_window = self.master
+        elif hasattr(self, 'parent'):
+            parent_window = self.parent
+        else:
+            # Fallback - find root window from frame
+            parent_window = self.frame.winfo_toplevel()
+        
+        help_window = tk.Toplevel(parent_window)
+        help_window.title("Table Column Widths - Help")
+        help_window.geometry("1000x830")  # Wider and shorter to match layout optimizer
+        help_window.resizable(False, False)
+        help_window.transient(parent_window)
+        help_window.grab_set()
+        
+        # Center window
+        help_window.geometry(f"+{parent_window.winfo_rootx() + 50}+{parent_window.winfo_rooty() + 50}")
+        
+        self._create_help_content(help_window)
+    
+    def _create_help_content(self, help_window):
+        """Create help content for table column widths"""
+        help_window.configure(bg=AppConstants.COLORS['background'])
+        
+        # Main container
+        container = ttk.Frame(help_window, padding="20")
+        container.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        ttk.Label(container, text="📊 Table Column Widths - Help", 
+                 font=('Segoe UI', 16, 'bold'), 
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 15))
+        
+        # Orange warning box
+        warning_frame = ttk.Frame(container)
+        warning_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        warning_container = tk.Frame(warning_frame, bg=AppConstants.COLORS['warning'], 
+                                   padx=15, pady=10, relief='solid', borderwidth=2)
+        warning_container.pack(fill=tk.X)
+        
+        ttk.Label(warning_container, text="⚠️  IMPORTANT DISCLAIMERS & REQUIREMENTS", 
+                 font=('Segoe UI', 12, 'bold'), 
+                 background=AppConstants.COLORS['warning'],
+                 foreground=AppConstants.COLORS['surface']).pack(anchor=tk.W)
+        
+        warnings = [
+            "• This tool ONLY works with PBIP enhanced report format (PBIR) files",
+            "• This is NOT officially supported by Microsoft - use at your own discretion",
+            "• Requires TMDL files in semantic model definition folder",
+            "• Always keep backups of your original reports before optimization",
+            "• Test thoroughly and validate results before production use",
+            "• Enable 'Store reports using enhanced metadata format (PBIR)' in Power BI Desktop"
+        ]
+        
+        for warning in warnings:
+            ttk.Label(warning_container, text=warning, font=('Segoe UI', 10),
+                     background=AppConstants.COLORS['warning'],
+                     foreground=AppConstants.COLORS['surface']).pack(anchor=tk.W, pady=1)
+        
+        # Top sections in 2-column layout
+        top_sections_frame = ttk.Frame(container)
+        top_sections_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        top_sections_frame.columnconfigure(0, weight=1)
+        top_sections_frame.columnconfigure(1, weight=1)
+        
+        # LEFT COLUMN TOP: What This Tool Does
+        left_top_frame = ttk.Frame(top_sections_frame)
+        left_top_frame.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=(0, 10))
+        
+        ttk.Label(left_top_frame, text="🎯 What This Tool Does", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        what_items = [
+            "✅ Standardizes column widths across all tables and matrices in your report",
+            "✅ Provides intelligent width presets (Narrow, Medium, Wide, Fit to Header, Fit to Totals)",
+            "✅ Supports both global configuration and per-visual customization",
+            "✅ Auto-sizes columns based on headers or totals for optimal fit",
+            "✅ Disables auto-size to preserve your width settings",
+            "✅ Provides preview before applying changes"
+        ]
+        
+        for item in what_items:
+            ttk.Label(left_top_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # RIGHT COLUMN TOP: File Requirements
+        right_top_frame = ttk.Frame(top_sections_frame)
+        right_top_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=(10, 0))
+        
+        ttk.Label(right_top_frame, text="📁 File Requirements", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        file_items = [
+            "✅ Only .pbip format files (.pbip folders) are supported",
+            "✅ Must contain semantic model definition folder with TMDL files",
+            "✅ Requires diagramLayout.json file for layout data",
+            "✅ Write permissions to PBIP folder (for saving changes)",
+            "❌ Legacy format with report.json files are NOT supported",
+            "❌ .pbix files are NOT supported",
+            "❌ .pbit files are NOT supported"
+        ]
+        
+        for item in file_items:
+            ttk.Label(right_top_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # Bottom sections in 2-column layout
+        bottom_sections_frame = ttk.Frame(container)
+        bottom_sections_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        bottom_sections_frame.columnconfigure(0, weight=1)
+        bottom_sections_frame.columnconfigure(1, weight=1)
+        
+        # LEFT COLUMN BOTTOM: Width Presets Explained
+        left_bottom_frame = ttk.Frame(bottom_sections_frame)
+        left_bottom_frame.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=(0, 10))
+        
+        ttk.Label(left_bottom_frame, text="⚙️ Width Presets Explained", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        preset_items = [
+            "• Narrow: Compact columns (good for dense data tables)",
+            "• Medium: Balanced width for general use",
+            "• Wide: Spacious columns for readability",
+            "• Fit to Header: Auto-sizes to fit column header text",
+            "• Fit to Totals: Auto-sizes to fit total row (best for measures)",
+            "• Custom: Specify exact pixel width (minimum 50px)"
+        ]
+        
+        for item in preset_items:
+            ttk.Label(left_bottom_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # RIGHT COLUMN BOTTOM: Important Notes
+        right_bottom_frame = ttk.Frame(bottom_sections_frame)
+        right_bottom_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=(10, 0))
+        
+        ttk.Label(right_bottom_frame, text="⚠️ Important Notes", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        notes_items = [
+            "• ONLY works with PBIP enhanced report format (PBIR)",
+            "• This tool is NOT officially supported by Microsoft",
+            "• Always backup your .pbip files before applying changes",
+            "• The tool modifies diagramLayout.json in your PBIP folder",
+            "• Test the optimized layout in Power BI Desktop before sharing",
+            "• Large models may take several minutes to analyze and optimize"
+        ]
+        
+        for item in notes_items:
+            ttk.Label(right_bottom_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # Button frame at bottom
+        button_frame = ttk.Frame(container)
+        button_frame.pack(fill=tk.X, pady=(10, 0), side=tk.BOTTOM)
+        
+        ttk.Button(button_frame, text="❌ Close", 
+                  command=help_window.destroy,
+                  style='Action.TButton').pack(pady=(5, 0))
+        
+        help_window.bind('<Escape>', lambda event: help_window.destroy())

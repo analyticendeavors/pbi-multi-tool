@@ -77,10 +77,11 @@ class ReportCleanupTab(BaseToolTab, FileInputMixin, ValidationMixin):
         """Setup the file input section"""
         guide_text = [
             "🎯 Quick Start Guide:",
-            "• Select your .pbip file using the Browse button",
-            "• Click 'ANALYZE REPORT' to scan for cleanup opportunities",
-            "• Choose what to remove: themes, custom visuals, or both",
-            "• Click 'REMOVE ITEMS' to clean up your report"
+            "1. Select your .pbip file using the Browse button",
+            "2. Click 'ANALYZE REPORT' to scan for cleanup",
+            "3. Choose what to remove",
+            "4. Click 'REMOVE ITEMS' to clean up your report",
+            "⚠️ Requires PBIP format with TMDLs files"
         ]
         
         self.file_input_components = self.create_file_input_section(
@@ -90,6 +91,13 @@ class ReportCleanupTab(BaseToolTab, FileInputMixin, ValidationMixin):
             guide_text
         )
         self.file_input_components['frame'].pack(fill=tk.X, pady=(0, 20))
+        
+        # Update the label to match other tabs
+        input_frame = self.file_input_components['input_frame']
+        for widget in input_frame.winfo_children():
+            if isinstance(widget, ttk.Label) and widget.cget('text') == "File Path:":
+                widget.configure(text="Project File (PBIP):")
+                break
         
         # Store the path variable
         self.pbip_path_var = self.file_input_components['path_var']

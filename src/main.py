@@ -46,6 +46,10 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         self.notebook = None
         self.tool_tabs = {}
         
+        # Tab state tracking for custom window sizes
+        self.tab_states = {}  # Stores: {tool_id: {'custom_size': (width, height), 'is_modified': False}}
+        self.current_tab_id = None  # Track current tab to detect changes
+        
         # Initialize tools
         self._initialize_tools()
     
@@ -74,7 +78,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         return root
     
     def _center_window(self, window):
-        """Center the window on the screen"""
+        """Center the window horizontally, position in upper third vertically"""
         window.update_idletasks()  # Ensure window dimensions are calculated
         
         # Get window dimensions
@@ -85,9 +89,9 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         screen_width = window.winfo_screenwidth()
         screen_height = window.winfo_screenheight()
         
-        # Calculate position to center the window
+        # Calculate position: center horizontally, near top with small margin
         x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
+        y = 50  # Fixed position: 50 pixels from top of screen
         
         # Ensure the window doesn't go off-screen
         x = max(0, x)
@@ -124,10 +128,15 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         
         ttk.Label(brand_frame, text=f"📊 {AppConstants.COMPANY_NAME.upper()}", 
                  style='Brand.TLabel').pack(anchor=tk.W)
-        ttk.Label(brand_frame, text="Enhanced Power BI Report Tools", 
-                 style='Title.TLabel').pack(anchor=tk.W, pady=(5, 0))
-        ttk.Label(brand_frame, text="Professional suite for Power BI report management", 
-                 style='Subtitle.TLabel').pack(anchor=tk.W, pady=(3, 0))
+        
+        # Title row with subtitle inline to the right
+        title_row = ttk.Frame(brand_frame)
+        title_row.pack(anchor=tk.W, pady=(5, 0))
+        
+        ttk.Label(title_row, text="Enhanced Power BI Report Tools", 
+                 style='Title.TLabel').pack(side=tk.LEFT)
+        ttk.Label(title_row, text=" —  Professional suite for Power BI report management", 
+                 style='Subtitle.TLabel').pack(side=tk.LEFT)
         ttk.Label(brand_frame, text=f"Built by {AppConstants.COMPANY_FOUNDER} of {AppConstants.COMPANY_NAME}", 
                  style='Subtitle.TLabel').pack(anchor=tk.W, pady=(8, 0))
         
@@ -221,7 +230,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             "pbip_layout_optimizer",   # Layout tool - second
             "report_cleanup",          # New cleanup tool - third
             "column_width",           # Column width tool - fourth
-            "page_copy"               # Utility tool - last
+            "advanced_copy"               # Utility tool - last
         ]
         
         # Get current tabs
@@ -281,53 +290,50 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
                  font=('Segoe UI', 10)).pack()
     
     def _on_tab_changed(self, event=None):
-        """Handle tab changes and adjust window height dynamically"""
+        """Handle tab changes with smart state tracking - remembers custom sizes"""
         try:
             if not self.notebook:
                 return
-                
-            # Get current tab
+            
+            # Get current tab and window size
             current_tab_id = self.notebook.select()
+            current_width = self.root.winfo_width()
+            current_height = self.root.winfo_height()
             
-            # Find which tool this tab belongs to by checking tab text
-            current_tab_text = self.notebook.tab(current_tab_id, "text")
+            # Save previous tab's current size if it was modified
+            if self.current_tab_id:
+                # Get previous tool ID
+                prev_tool_id = self._get_tool_id_from_tab(self.current_tab_id)
+                if prev_tool_id and prev_tool_id in self.tab_states:
+                    # Check if tab was modified (has custom size different from default)
+                    if self.tab_states[prev_tool_id]['is_modified']:
+                        # Save the current window size as custom size
+                        self.tab_states[prev_tool_id]['custom_size'] = (current_width, current_height)
             
-            # Map tab text to tool ID (more reliable after reordering)
-            tool_id = None
-            if "Report Merger" in current_tab_text:
-                tool_id = "report_merger"
-            elif "Advanced Page Copy" in current_tab_text or "Page Copy" in current_tab_text:
-                tool_id = "page_copy"
-            elif "Layout Optimizer" in current_tab_text:
-                tool_id = "pbip_layout_optimizer"
-            elif "Report Cleanup" in current_tab_text:
-                tool_id = "report_cleanup"
-            elif "Table Column Widths" in current_tab_text or "Visual Cleanup" in current_tab_text:
-                tool_id = "column_width"
+            # Get tool ID for new tab
+            tool_id = self._get_tool_id_from_tab(current_tab_id)
+            if not tool_id:
+                return
+            
+            # Initialize state tracking for this tab if not exists
+            if tool_id not in self.tab_states:
+                self.tab_states[tool_id] = {
+                    'custom_size': None,
+                    'is_modified': False,
+                    'default_size': self._get_default_size_for_tool(tool_id)
+                }
+            
+            # Check if tab has been modified by looking at the tool tab
+            is_modified = self._check_if_tab_modified(tool_id)
+            self.tab_states[tool_id]['is_modified'] = is_modified
+            
+            # Determine which size to use
+            if is_modified and self.tab_states[tool_id]['custom_size']:
+                # Tab is modified and has a custom size - use it
+                width, height = self.tab_states[tool_id]['custom_size']
             else:
-                # For any other tools, try to match by checking tool tabs
-                for tid, tab in self.tool_tabs.items():
-                    if tab.get_frame() == self.notebook.nametowidget(current_tab_id):
-                        tool_id = tid
-                        break
-            
-            # Adjust height based on tool ID and center window
-            if tool_id == "report_merger":
-                new_geometry = "1150x950"  # More compact initial height for Report Merger
-            elif tool_id == "page_copy":
-                new_geometry = "1175x820"   # Page Copy height
-            elif tool_id == "pbip_layout_optimizer":
-                new_geometry = "1130x850"  # Layout Optimizer height
-            elif tool_id == "report_cleanup":
-                new_geometry = "1100x1095"  # Report Cleanup height - reduced by 25px
-            elif tool_id == "column_width":
-                new_geometry = "1200x1035"  # Visual Cleanup height - optimized for compact fit with all UI elements visible
-            else:
-                new_geometry = "1250x1150"   # Default height
-            
-            # Parse the geometry to get width and height
-            width, height = new_geometry.split('x')
-            width, height = int(width), int(height)
+                # Tab is pristine - use default size
+                width, height = self.tab_states[tool_id]['default_size']
             
             # Get current window position to preserve it
             current_x = self.root.winfo_x()
@@ -336,12 +342,120 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             # Apply the new geometry while preserving current position
             self.root.geometry(f"{width}x{height}+{current_x}+{current_y}")
             
+            # Update current tab tracking
+            self.current_tab_id = current_tab_id
+            
             # Force window update
             self.root.update_idletasks()
             self.root.update()
                     
         except Exception as e:
             pass  # Silently handle tab change errors
+    
+    def _get_tool_id_from_tab(self, tab_id):
+        """Get tool ID from tab ID by checking tab text"""
+        try:
+            current_tab_text = self.notebook.tab(tab_id, "text")
+            
+            # Map tab text to tool ID
+            if "Report Merger" in current_tab_text:
+                return "report_merger"
+            elif "Advanced Copy" in current_tab_text or "Advanced Page Copy" in current_tab_text:
+                return "advanced_copy"
+            elif "Layout Optimizer" in current_tab_text:
+                return "pbip_layout_optimizer"
+            elif "Report Cleanup" in current_tab_text:
+                return "report_cleanup"
+            elif "Table Column Widths" in current_tab_text or "Visual Cleanup" in current_tab_text:
+                return "column_width"
+            else:
+                # For any other tools, try to match by checking tool tabs
+                for tid, tab in self.tool_tabs.items():
+                    if tab.get_frame() == self.notebook.nametowidget(tab_id):
+                        return tid
+        except:
+            pass
+        return None
+    
+    def _get_default_size_for_tool(self, tool_id):
+        """Get default window size for a specific tool"""
+        default_sizes = {
+            "report_merger": (1150, 950),
+            "advanced_copy": (1175, 820),
+            "pbip_layout_optimizer": (1130, 850),
+            "report_cleanup": (1100, 1095),
+            "column_width": (1200, 1035)
+        }
+        return default_sizes.get(tool_id, (1250, 1150))  # Default for unknown tools
+    
+    def _check_if_tab_modified(self, tool_id):
+        """Check if a tab has been modified (file selected, button clicked, etc.)"""
+        try:
+            tool_tab = self.tool_tabs.get(tool_id)
+            if not tool_tab:
+                return False
+            
+            # Check if tool tab has any indication of modification
+            # Each tool should have a method to check if it's in pristine state
+            if hasattr(tool_tab, 'is_tab_pristine'):
+                return not tool_tab.is_tab_pristine()  # Returns True if modified
+            
+            # Fallback: check for common indicators of modification
+            # Most tools use StringVar for file paths - check those first
+            if hasattr(tool_tab, '__dict__'):
+                for attr_name, attr_value in tool_tab.__dict__.items():
+                    # Check StringVar instances (used for file paths)
+                    if isinstance(attr_value, tk.StringVar):
+                        value = attr_value.get().strip()
+                        if value:  # Has content
+                            return True
+                    # Check IntVar instances (used for options)
+                    elif isinstance(attr_value, tk.IntVar):
+                        # Check if it differs from 0 (common default)
+                        if attr_value.get() != 0:
+                            return True
+            
+            # Additional fallback: check widgets in frame
+            frame = tool_tab.get_frame()
+            for child in frame.winfo_children():
+                if self._widget_has_content(child):
+                    return True
+            
+            return False
+        except:
+            return False
+    
+    def _widget_has_content(self, widget):
+        """Recursively check if a widget or its children have content"""
+        try:
+            # Check if it's an Entry widget with text
+            if isinstance(widget, tk.Entry) and widget.get().strip():
+                return True
+            
+            # Check if it's a Text widget with content
+            if isinstance(widget, tk.Text):
+                content = widget.get("1.0", tk.END).strip()
+                if content:
+                    return True
+            
+            # Check if it's a StringVar with value
+            if hasattr(widget, 'get'):
+                try:
+                    value = widget.get()
+                    if isinstance(value, str) and value.strip():
+                        return True
+                except:
+                    pass
+            
+            # Recursively check children
+            if hasattr(widget, 'winfo_children'):
+                for child in widget.winfo_children():
+                    if self._widget_has_content(child):
+                        return True
+        except:
+            pass
+        
+        return False
     
     def perform_tool_operation(self, **kwargs) -> bool:
         """Implementation required by EnhancedBaseExternalTool"""
@@ -368,8 +482,8 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             tool_id = None
             if "Report Merger" in current_tab_text:
                 tool_id = "report_merger"
-            elif "Advanced Page Copy" in current_tab_text or "Page Copy" in current_tab_text:
-                tool_id = "page_copy"
+            elif "Advanced Copy" in current_tab_text or "Advanced Page Copy" in current_tab_text:
+                tool_id = "advanced_copy"
             elif "Layout Optimizer" in current_tab_text:
                 tool_id = "pbip_layout_optimizer"
             elif "Report Cleanup" in current_tab_text:
@@ -383,8 +497,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
                         tool_id = tid
                         break
             
-            print(f"DEBUG: Help dialog - detected tool_id: {tool_id}")
-            
             # Get the tool tab and show its help dialog
             if tool_id and tool_id in self.tool_tabs:
                 tool_tab = self.tool_tabs[tool_id]
@@ -397,7 +509,6 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
             
         except Exception as e:
             self.logger.log_security_event(f"Help dialog error: {e}", "ERROR")
-            print(f"DEBUG: Help dialog error: {e}")
             import traceback
             traceback.print_exc()
             self.show_general_help()

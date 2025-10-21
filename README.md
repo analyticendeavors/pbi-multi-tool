@@ -2,7 +2,7 @@
 
 **Professional Power BI toolkit with plugin architecture for comprehensive report management**
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
@@ -26,11 +26,13 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Smart bookmark and measure merging**
 - **Professional validation and audit logging**
 
-### 🎯 **Advanced Page Copy Tool**
-- **Cross-report page copying** with dependency tracking
-- **Visual element preservation** including custom themes
-- **Bookmark and navigation maintenance**
-- **Selective content transfer capabilities**
+### 🎯 **Advanced Copy Tool** ⭐ *Enhanced in v1.1.1*
+- **Multi-page copying** - Copy pages 1 or more times within a single PBIP or between PBIPs
+- **Bookmark management** - Automatic bookmark and bookmark group duplication
+- **Action reassignment** - All items with actions pointing to copied pages get reassigned to new bookmarks
+- **Popup visual copying** - NEW! Copy bookmarks with their associated popup visuals
+- **Cross-report support** - Works seamlessly within reports or between different PBIPs
+- **Complete preservation** - Maintains all visual properties, themes, and interactions
 
 ### 📐 **PBIP Layout Optimizer**
 - **Middle-out layout optimization** for model diagrams
@@ -67,6 +69,12 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 ---
 
 ## ✨ Enhanced Features & Intelligence
+
+### 🎯 **Advanced Copy Intelligence** ⭐ *New in v1.1.1*
+- **Multi-instance support** - Create multiple copies in one operation
+- **Smart action mapping** - Automatically updates all action references to copied bookmarks
+- **Popup preservation** - Maintains complex popup visual configurations across copies
+- **Cross-PBIP intelligence** - Seamlessly handles dependencies when copying between reports
 
 ### 📊 **Advanced Matrix Handling**
 - **Hierarchy-aware compression** (parent levels keep full width)
@@ -145,12 +153,33 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 5. **Execute** merge with real-time progress tracking
 6. **Open** your consolidated report in Power BI Desktop
 
-### 🎯 **Advanced Page Copy Tool**
+### 🎯 **Advanced Copy Tool** ⭐ *Enhanced in v1.1.1*
+
+#### **Page Copying Mode**
 1. **Choose** source report (.pbip file)
-2. **Choose** destination report (.pbip file)
-3. **Select** specific pages to copy
-4. **Configure** copy options (themes, bookmarks, etc.)
-5. **Execute** copy operation with dependency tracking
+2. **Choose** destination report (.pbip file or same for within-PBIP copying)
+3. **Select** specific pages to copy (single or multiple)
+4. **Specify** number of copies (1 or more)
+5. **Configure** copy options:
+   - Include bookmarks and bookmark groups
+   - Automatic action reassignment to copied bookmarks
+   - Theme preservation
+6. **Execute** copy operation with dependency tracking
+7. **Review** copied pages with all bookmarks and actions properly reassigned
+
+#### **Bookmark + Popup Copier Mode** 🆕
+1. **Switch** to Bookmark/Popup Copier mode
+2. **Choose** source report (.pbip file)
+3. **Choose** destination report (.pbip file or same for within-PBIP copying)
+4. **Select** bookmarks with associated popup visuals
+5. **Execute** copy operation
+6. **Review** copied bookmarks with complete popup visual preservation
+
+**Use Cases:**
+- Duplicate standardized pages within a report for different data views
+- Copy popup templates from master reports to client reports
+- Create multiple instances of interactive pages with unique bookmarks
+- Replicate complex bookmark/popup combinations across reports
 
 ### 📐 **Layout Optimizer Tool**
 1. **Select** PBIP file to optimize
@@ -192,10 +221,10 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
    │   └── constants.py (Shared constants)
    └── 🛠️ tools/ (Plugin Tools)
        ├── 📊 report_merger/
-       ├── 🎯 page_copy/
+       ├── 🎯 advanced_copy/ (Enhanced in v1.1.1)
        ├── 📐 pbip_layout_optimizer/
        ├── 🧹 report_cleanup/
-       └── 📊 column_width/ (Enhanced with AI)
+       └── 📊 column_width/
 ```
 
 ### **Component Composition**
@@ -203,14 +232,22 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 - **FileInputComponent**: Path handling and file operations  
 - **ThreadingComponent**: Background processing with proper closures
 - **ProgressComponent**: User feedback and progress indication
+- **BookmarkMapper**: Advanced bookmark tracking and action reassignment (New!)
+- **PopupHandler**: Popup visual dependency management (New!)
 - **IntelligentSizing**: Advanced width calculations with content-type detection
 
 ---
 
 ## ❓ Frequently Asked Questions
 
-### **Q: What's new in the enhanced Table Column Widths tool?**
-**A:** The Table Column Widths tool now includes enhanced matrix handling with hierarchy awareness, Fit to Totals as the default for measures to prevent wrapping, and Auto-fit as the default for categorical columns.
+### **Q: What's new in v1.1.1?**
+**A:** Version 1.1.1 significantly enhances the Advanced Copy Tool (formerly "Advanced Page Copy"). It now supports multi-page copying within or between PBIPs, automatic bookmark and action reassignment, and introduces a brand new Bookmark + Popup Copier for copying bookmarks with their associated popup visuals.
+
+### **Q: What's the difference between page copying and bookmark/popup copying?**
+**A:** Page copying duplicates entire report pages with all their content, bookmarks, and actions. Bookmark/popup copying specifically targets bookmarks that have associated popup visuals, perfect for replicating interactive elements across reports without copying entire pages.
+
+### **Q: Can I copy pages multiple times in one operation?**
+**A:** Yes! In v1.1.1, you can specify how many copies you want (1 or more), and the tool will create them all with properly reassigned bookmarks and actions.
 
 ### **Q: What's the difference between this and individual tools?**
 **A:** This is a unified suite with shared components, consistent UI, and plugin architecture. All tools share security features, logging, and base functionality.
@@ -240,6 +277,11 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 - Ensure your report contains tableEx or pivotTable visual types
 - Check that visuals have proper field configurations
 
+**"Bookmark references broken" after copying**
+- Ensure you're using v1.1.1 or later with enhanced action reassignment
+- Check that all bookmarks were properly selected during copy operation
+- Verify source report bookmarks are not corrupted
+
 **"No tools discovered"**
 - Check that `/tools` directory exists and contains tool modules
 - Verify Python import paths are correct
@@ -267,6 +309,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ### **Getting Help**
 - 📚 **Documentation**: Check our [Wiki](../../wiki) for detailed tool guides
+- 📋 **Release Notes**: See [VERSION_1.1.1_RELEASE_NOTES.md](VERSION_1.1.1_RELEASE_NOTES.md) for latest updates
 - 🐛 **Bug Reports**: Use [Issues](../../issues) to report problems
 - 💡 **Feature Requests**: Submit via [Issues](../../issues) with enhancement label
 - 🌐 **Professional Support**: [Analytic Endeavors](https://www.analyticendeavors.com)
@@ -319,7 +362,15 @@ This software is released under the MIT License. See [LICENSE](LICENSE.txt) for 
 
 ## 🔄 Version History
 
-### **v1.0.0 - Enhanced Report Cleanup Edition** ⭐ *Current*
+### **v1.1.1 - Advanced Copy Enhancement Edition** ⭐ *Current*
+- ✅ **Enhanced page copying** - Multi-page support within/across PBIPs
+- ✅ **Bookmark management** - Automatic bookmark and bookmark group duplication
+- ✅ **Action reassignment** - All action references automatically updated to copied bookmarks
+- ✅ **NEW: Bookmark + Popup Copier** - Copy bookmarks with associated popup visuals
+- ✅ **Tool renamed** - "Advanced Page Copy" → "Advanced Copy"
+- 🐛 **Bug fixes** - Improved bookmark reference handling and action mapping
+
+### **v1.0.0 - Enhanced Report Cleanup Edition**
 - ✅ **Enhanced Table Column Widths** - Fit to Totals defaults with intelligent width calculation
 - ✅ **Matrix optimization** - Hierarchy-aware spacing and improved compression
 - ✅ **Content detection** - Smart recognition of dates, currency, hierarchy levels

@@ -151,6 +151,11 @@ class BaseToolTab(ABC):
                     ttk.Label(guide_frame, text=text, 
                              font=('Segoe UI', 10, 'bold'), 
                              foreground=AppConstants.COLORS['info']).pack(anchor=tk.W)
+                elif text.startswith("⚠️"):  # Warning line - use tk.Label for orange italic
+                    tk.Label(guide_frame, text=f"   {text}", 
+                            font=('Segoe UI', 9, 'italic'),
+                            foreground='#d97706',
+                            bg='#f8fafc').pack(anchor=tk.W, pady=1)
                 else:  # Steps
                     # Handle bullet points with proper indentation for wrapped text
                     if text.startswith('•'):
@@ -574,7 +579,7 @@ class BaseToolTab(ABC):
         """
         help_window = tk.Toplevel(self.main_app.root)
         help_window.title(title)
-        help_window.geometry("650x620")
+        help_window.geometry("650x830")
         help_window.resizable(False, False)
         help_window.transient(self.main_app.root)
         help_window.grab_set()
@@ -609,6 +614,70 @@ class BaseToolTab(ABC):
     def ask_yes_no(self, title: str, message: str) -> bool:
         """Show yes/no dialog"""
         return messagebox.askyesno(title, message)
+    
+    def show_scrollable_info(self, title: str, content: str):
+        """
+        Show a scrollable info dialog with text content.
+        Perfect for help dialogs, documentation, or long messages.
+        
+        Args:
+            title: Window title
+            content: Text content to display (can be multi-line)
+        """
+        info_window = tk.Toplevel(self.main_app.root)
+        info_window.title(title)
+        info_window.geometry("700x650")
+        info_window.resizable(True, True)
+        info_window.transient(self.main_app.root)
+        info_window.grab_set()
+        
+        # Center window
+        info_window.geometry(f"+{self.main_app.root.winfo_rootx() + 50}+{self.main_app.root.winfo_rooty() + 50}")
+        info_window.configure(bg=AppConstants.COLORS['background'])
+        
+        # Main frame
+        main_frame = ttk.Frame(info_window, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        header_label = ttk.Label(main_frame, text=title, 
+                                font=('Segoe UI', 14, 'bold'), 
+                                foreground=AppConstants.COLORS['primary'])
+        header_label.pack(anchor=tk.W, pady=(0, 15))
+        
+        # Scrollable text area
+        text_frame = ttk.Frame(main_frame)
+        text_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        # Create scrolled text widget
+        text_widget = scrolledtext.ScrolledText(
+            text_frame,
+            wrap=tk.WORD,
+            font=('Segoe UI', 10),
+            bg=AppConstants.COLORS['surface'],
+            fg=AppConstants.COLORS['text_primary'],
+            relief='solid',
+            borderwidth=1,
+            padx=10,
+            pady=10
+        )
+        text_widget.pack(fill=tk.BOTH, expand=True)
+        
+        # Insert content
+        text_widget.insert(1.0, content)
+        text_widget.config(state=tk.DISABLED)  # Make read-only
+        
+        # Close button
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        close_button = ttk.Button(button_frame, text="❌ Close", 
+                                 command=info_window.destroy,
+                                 style='Action.TButton')
+        close_button.pack()
+        
+        # Bind escape key to close
+        info_window.bind('<Escape>', lambda event: info_window.destroy())
 
 
 class FileInputMixin:

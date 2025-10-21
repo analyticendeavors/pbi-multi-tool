@@ -25,6 +25,10 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
         super().__init__(parent, main_app, "pbip_layout_optimizer", "PBIP Layout Optimizer")
         self.selected_pbip_folder = tk.StringVar()
         
+        # Initialize logger
+        import logging
+        self.logger = logging.getLogger("pbip_layout_optimizer_ui")
+        
         # Initialize enhanced core
         self.layout_core = EnhancedPBIPLayoutCore()
         
@@ -67,8 +71,8 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
                  foreground=AppConstants.COLORS['info']).pack(anchor=tk.W)
         
         instructions = [
-            "1. Navigate to your .pbip file folder in File Explorer",
-            "2. Right-click the .pbip folder and select 'Copy as path'",
+            "1. Navigate to your .pbip file in File Explorer",
+            "2. Right-click the .pbip file and select 'Copy as path'",
             "3. Paste (Ctrl+V) into the path field",
             "4. Path quotes will be automatically cleaned",
             "5. Click 'Analyze Layout' to assess current diagram",
@@ -81,24 +85,25 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
                      foreground=AppConstants.COLORS['text_secondary'], 
                      wraplength=300).pack(anchor=tk.W, padx=(10, 0), pady=1)
         
-        ttk.Label(instructions_frame, text="⚠️ Requires PBIP format with TMDL files", 
-                 font=('Segoe UI', 8, 'italic'),
-                 foreground=AppConstants.COLORS['warning']).pack(anchor=tk.W, padx=(10, 0), pady=(5, 0))
+        tk.Label(instructions_frame, text="⚠️ Requires PBIP format with TMDL files", 
+                 font=('Segoe UI', 9, 'italic'),
+                 foreground='#d97706',
+                 background='#f8fafc').pack(anchor=tk.W, padx=(10, 0), pady=(5, 0))
         
         # RIGHT: File input
         input_frame = ttk.Frame(content_frame)
         input_frame.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.N))
         input_frame.columnconfigure(1, weight=1)
         
-        # PBIP Folder input
-        ttk.Label(input_frame, text="PBIP Folder:").grid(row=0, column=0, sticky=tk.W, pady=8)
+        # PBIP File input
+        ttk.Label(input_frame, text="Project File (PBIP):").grid(row=0, column=0, sticky=tk.W, pady=8)
         
         self.folder_entry = ttk.Entry(input_frame, textvariable=self.selected_pbip_folder, 
                                      font=('Segoe UI', 9), width=80)
         self.folder_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(15, 10), pady=8)
         
         self.browse_btn = ttk.Button(input_frame, text="📂 Browse", 
-                                    command=self._browse_folder)
+                                    command=self._browse_file)
         self.browse_btn.grid(row=0, column=2, pady=8)
         
         # Analyze button
@@ -111,7 +116,7 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
         self.validation_frame = ttk.Frame(input_frame)
         self.validation_frame.grid(row=2, column=0, columnspan=3, pady=(10, 0), sticky=(tk.W, tk.E))
         
-        self.validation_label = ttk.Label(self.validation_frame, text="Select a PBIP folder to begin analysis",
+        self.validation_label = ttk.Label(self.validation_frame, text="Select a PBIP file to begin analysis",
                                          font=('Segoe UI', 9, 'italic'),
                                          foreground=AppConstants.COLORS['text_secondary'])
         self.validation_label.pack()
@@ -157,30 +162,70 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
                   command=self._reset_interface,
                   style='Secondary.TButton').pack(side=tk.LEFT)
     
-    def _browse_folder(self):
-        """Browse for PBIP folder"""
-        folder_path = filedialog.askdirectory(
-            title="Select PBIP Folder",
-            initialdir=self.selected_pbip_folder.get() or str(Path.home())
+    def _browse_file(self):
+        """Browse for PBIP file"""
+        file_path = filedialog.askopenfilename(
+            title="Select PBIP File",
+            initialdir=str(Path(self.selected_pbip_folder.get()).parent) if self.selected_pbip_folder.get() else str(Path.home()),
+            filetypes=[("Power BI Project Files", "*.pbip"), ("All Files", "*.*")]
         )
         
-        if folder_path:
-            self.selected_pbip_folder.set(folder_path)
-            self._validate_folder(folder_path)
+        if file_path:
+            self.selected_pbip_folder.set(file_path)
+            self._validate_folder(file_path)
+    
+    def _extract_folder_from_pbip_file(self, file_path: str) -> Optional[str]:
+        """Extract the folder path from a .pbip file path"""
+        try:
+            file_path_obj = Path(file_path)
+            
+            # Check if the path is a .pbip file
+            if not file_path_obj.suffix.lower() == '.pbip':
+                return None
+            
+            # Check if file exists
+            if not file_path_obj.exists():
+                return None
+            
+            # The folder is the parent directory of the .pbip file
+            folder_path = file_path_obj.parent
+            
+            # Verify it's a valid PBIP folder structure
+            # Look for .SemanticModel folder in the same directory
+            semantic_folders = list(folder_path.glob("*.SemanticModel"))
+            if not semantic_folders:
+                return None
+            
+            return str(folder_path)
+            
+        except Exception as e:
+            self.logger.error(f"Error extracting folder from PBIP file: {e}")
+            return None
     
     def _on_paste(self, event):
         """Handle paste event to clean path quotes"""
         # Schedule validation after paste
         self.master.after(100, lambda: self._validate_folder(self.selected_pbip_folder.get()))
     
-    def _validate_folder(self, folder_path: str):
-        """Validate selected PBIP folder"""
+    def _validate_folder(self, file_path: str):
+        """Validate selected PBIP file and extract folder path"""
         # Clean quotes from path
-        folder_path = folder_path.strip().strip('"').strip("'")
-        if folder_path != self.selected_pbip_folder.get():
-            self.selected_pbip_folder.set(folder_path)
+        file_path = file_path.strip().strip('"').strip("'")
+        if file_path != self.selected_pbip_folder.get():
+            self.selected_pbip_folder.set(file_path)
         
+        if not file_path:
+            return
+        
+        # Extract folder path from .pbip file
+        folder_path = self._extract_folder_from_pbip_file(file_path)
         if not folder_path:
+            self.validation_label.configure(
+                text="❌ Invalid PBIP file path",
+                foreground=AppConstants.COLORS['error']
+            )
+            self.analyze_btn.configure(state='disabled')
+            self.optimize_btn.configure(state='disabled')
             return
         
         validation = self.layout_core.validate_pbip_folder(folder_path)
@@ -192,7 +237,7 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
             tmdl_count = len(tmdl_files) - 1  # Exclude model.tmdl
             
             self.validation_label.configure(
-                text=f"✅ Valid PBIP folder\n📋 Tables found: {table_count}\n📄 TMDL files: {tmdl_count}",
+                text=f"✅ Valid PBIP file\n📋 Tables found: {table_count}\n📄 TMDL files: {tmdl_count}",
                 foreground=AppConstants.COLORS['success']
             )
             
@@ -211,9 +256,15 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
     
     def _analyze_layout(self):
         """Analyze layout quality"""
-        folder_path = self.selected_pbip_folder.get()
+        file_path = self.selected_pbip_folder.get()
+        if not file_path:
+            messagebox.showwarning("Error", "Please select a valid PBIP file first.")
+            return
+        
+        # Extract folder path from file path
+        folder_path = self._extract_folder_from_pbip_file(file_path)
         if not folder_path:
-            messagebox.showwarning("Error", "Please select a valid PBIP folder first.")
+            messagebox.showerror("Error", "Invalid PBIP file. Please select a valid .pbip file.")
             return
         
         self.analyze_btn.configure(state='disabled')
@@ -268,9 +319,15 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
     
     def _optimize_layout(self):
         """Optimize layout"""
-        folder_path = self.selected_pbip_folder.get()
-        if not folder_path:
+        file_path = self.selected_pbip_folder.get()
+        if not file_path:
             messagebox.showwarning("Error", "Please run analysis first.")
+            return
+        
+        # Extract folder path from file path
+        folder_path = self._extract_folder_from_pbip_file(file_path)
+        if not folder_path:
+            messagebox.showerror("Error", "Invalid PBIP file. Please select a valid .pbip file.")
             return
         
         self.optimize_btn.configure(state='disabled')
@@ -663,7 +720,7 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
         
         # Reset validation
         self.validation_label.configure(
-            text="Select a PBIP folder to begin analysis",
+            text="Select a PBIP file to begin analysis",
             foreground=AppConstants.COLORS['text_secondary']
         )
         
@@ -696,13 +753,13 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
         
         help_window = tk.Toplevel(parent_window)
         help_window.title("PBIP Layout Optimizer - Help")
-        help_window.geometry("750x1160")
+        help_window.geometry("1000x830")  # Wider and shorter
         help_window.resizable(False, False)
         help_window.transient(parent_window)
         help_window.grab_set()
         
         # Center window
-        help_window.geometry(f"+{parent_window.winfo_rootx() + 100}+{parent_window.winfo_rooty() + 50}")
+        help_window.geometry(f"+{parent_window.winfo_rootx() + 50}+{parent_window.winfo_rooty() + 50}")
         
         self._create_help_content(help_window)
     
@@ -717,11 +774,11 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
         # Header
         ttk.Label(container, text="📊 PBIP Layout Optimizer Help", 
                  font=('Segoe UI', 16, 'bold'), 
-                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 20))
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 15))
         
         # Orange warning box
         warning_frame = ttk.Frame(container)
-        warning_frame.pack(fill=tk.X, pady=(0, 20))
+        warning_frame.pack(fill=tk.X, pady=(0, 15))
         
         warning_container = tk.Frame(warning_frame, bg=AppConstants.COLORS['warning'], 
                                    padx=15, pady=10, relief='solid', borderwidth=2)
@@ -746,63 +803,117 @@ class PBIPLayoutOptimizerTab(BaseToolTab):
                      background=AppConstants.COLORS['warning'],
                      foreground=AppConstants.COLORS['surface']).pack(anchor=tk.W, pady=1)
         
-        # Content sections
-        sections = [
-            ("🎯 What This Tool Does", [
-                "✅ Analyzes your current relationship diagram layout quality",
-                "✅ Provides layout quality scoring (0-100 scale with ratings)",
-                "✅ Categorizes tables by type (Facts, Dimensions L1-L4+, Special tables)",
-                "✅ Applies Haven's middle-out design philosophy for professional layouts",
-                "✅ Positions tables based on relationships and hierarchy",
-                "✅ Optimizes spacing and reduces overlapping elements",
-                "✅ Provides detailed analysis scoring and recommendations"
-            ]),
-            ("📁 File Requirements", [
-                "✅ Only .pbip format files (.pbip folders) are supported",
-                "✅ Must contain semantic model definition folder with TMDL files",
-                "✅ Requires diagramLayout.json file for layout data",
-                "✅ Write permissions to PBIP folder (for saving changes)",
-                "❌ Legacy .pbix files are NOT supported",
-                "❌ Reports without TMDL files cannot be optimized"
-            ]),
-            ("🎯 Haven's Middle-Out Design Philosophy", [
-                "✅ Fact tables positioned centrally as the data foundation",
-                "✅ L1 dimensions arranged around facts for direct relationships",
-                "✅ L2+ dimensions positioned in outer layers by hierarchy",
-                "✅ Special tables (Calendar, Parameters, Metrics) grouped logically",
-                "✅ Optimized spacing prevents overlapping and improves readability",
-                "✅ Professional appearance suitable for executive presentations"
-            ]),
-            ("⚠️ Important Notes", [
-                "• ONLY works with PBIP format (not .pbix files)",
-                "• This tool is NOT officially supported by Microsoft",
-                "• Always backup your .pbip files before optimization",
-                "• The tool modifies diagramLayout.json in your PBIP folder",
-                "• Test the optimized layout in Power BI Desktop before sharing",
-                "• Large models may take several minutes to analyze and optimize"
-            ])
+        # Top sections in 2-column layout
+        top_sections_frame = ttk.Frame(container)
+        top_sections_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        top_sections_frame.columnconfigure(0, weight=1)
+        top_sections_frame.columnconfigure(1, weight=1)
+        
+        # LEFT COLUMN TOP: What This Tool Does
+        left_top_frame = ttk.Frame(top_sections_frame)
+        left_top_frame.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=(0, 10))
+        
+        ttk.Label(left_top_frame, text="🎯 What This Tool Does", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        what_items = [
+            "✅ Analyzes your current relationship diagram layout quality",
+            "✅ Provides layout quality scoring (0-100 scale with ratings)",
+            "✅ Categorizes tables by type (Facts, Dimensions L1-L4+, Special tables)",
+            "✅ Applies Haven's middle-out design philosophy for professional layouts",
+            "✅ Positions tables based on relationships and hierarchy",
+            "✅ Optimizes spacing and reduces overlapping elements",
+            "✅ Provides detailed analysis scoring and recommendations"
         ]
         
-        for title, items in sections:
-            section_frame = ttk.Frame(container)
-            section_frame.pack(fill=tk.X, pady=(0, 15))
-            
-            ttk.Label(section_frame, text=title, 
-                     font=('Segoe UI', 12, 'bold'),
-                     foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
-            
-            for item in items:
-                ttk.Label(section_frame, text=item, 
-                         font=('Segoe UI', 10),
-                         foreground=AppConstants.COLORS['text_primary'],
-                         wraplength=600).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        for item in what_items:
+            ttk.Label(left_top_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # RIGHT COLUMN TOP: File Requirements
+        right_top_frame = ttk.Frame(top_sections_frame)
+        right_top_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=(10, 0))
+        
+        ttk.Label(right_top_frame, text="📁 File Requirements", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        file_items = [
+            "✅ Only .pbip format files (.pbip folders) are supported",
+            "✅ Must contain semantic model definition folder with TMDL files",
+            "✅ Requires diagramLayout.json file for layout data",
+            "✅ Write permissions to PBIP folder (for saving changes)",
+            "❌ Legacy .pbix files are NOT supported",
+            "❌ Reports without TMDL files cannot be optimized"
+        ]
+        
+        for item in file_items:
+            ttk.Label(right_top_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # Bottom sections in 2-column layout
+        bottom_sections_frame = ttk.Frame(container)
+        bottom_sections_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        bottom_sections_frame.columnconfigure(0, weight=1)
+        bottom_sections_frame.columnconfigure(1, weight=1)
+        
+        # LEFT COLUMN BOTTOM: Haven's Middle-Out Design Philosophy
+        left_bottom_frame = ttk.Frame(bottom_sections_frame)
+        left_bottom_frame.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E), padx=(0, 10))
+        
+        ttk.Label(left_bottom_frame, text="🎯 Haven's Middle-Out Design Philosophy", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        philosophy_items = [
+            "✅ Fact tables positioned centrally as the data foundation",
+            "✅ L1 dimensions arranged around facts for direct relationships",
+            "✅ L2+ dimensions positioned in outer layers by hierarchy",
+            "✅ Special tables (Calendar, Parameters, Metrics) grouped logically",
+            "✅ Optimized spacing prevents overlapping and improves readability",
+            "✅ Professional appearance suitable for executive presentations"
+        ]
+        
+        for item in philosophy_items:
+            ttk.Label(left_bottom_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
+        
+        # RIGHT COLUMN BOTTOM: Important Notes
+        right_bottom_frame = ttk.Frame(bottom_sections_frame)
+        right_bottom_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=(10, 0))
+        
+        ttk.Label(right_bottom_frame, text="⚠️ Important Notes", 
+                 font=('Segoe UI', 12, 'bold'),
+                 foreground=AppConstants.COLORS['primary']).pack(anchor=tk.W, pady=(0, 5))
+        
+        notes_items = [
+            "• ONLY works with PBIP format (not .pbix files)",
+            "• This tool is NOT officially supported by Microsoft",
+            "• Always backup your .pbip files before optimization",
+            "• The tool modifies diagramLayout.json in your PBIP folder",
+            "• Test the optimized layout in Power BI Desktop before sharing",
+            "• Large models may take several minutes to analyze and optimize"
+        ]
+        
+        for item in notes_items:
+            ttk.Label(right_bottom_frame, text=item, 
+                     font=('Segoe UI', 10),
+                     foreground=AppConstants.COLORS['text_primary'],
+                     wraplength=450).pack(anchor=tk.W, padx=(10, 0), pady=1)
         
         # Button frame at bottom
         button_frame = ttk.Frame(container)
-        button_frame.pack(fill=tk.X, pady=(5, 0), side=tk.BOTTOM)
+        button_frame.pack(fill=tk.X, pady=(10, 0), side=tk.BOTTOM)
         
         ttk.Button(button_frame, text="❌ Close", 
                   command=help_window.destroy,
-                  style='Action.TButton').pack(pady=(10, 0))
+                  style='Action.TButton').pack(pady=(5, 0))
         
         help_window.bind('<Escape>', lambda event: help_window.destroy())
