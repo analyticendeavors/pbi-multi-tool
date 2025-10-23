@@ -311,8 +311,8 @@ class EnhancedBaseExternalTool(ABC):
             self.root = self.create_ui()
             self.is_running = True
             
-            # Center window
-            self.root.eval('tk::PlaceWindow . center')
+            # DO NOT center window here - let create_ui() handle positioning
+            # self.root.eval('tk::PlaceWindow . center')  # REMOVED - conflicts with custom positioning
             
             self.logger.log_operation("UI created with tool manager, starting main loop")
             

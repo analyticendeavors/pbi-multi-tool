@@ -78,7 +78,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         return root
     
     def _center_window(self, window):
-        """Center the window horizontally, position in upper third vertically"""
+        """Center the window horizontally, position near top vertically"""
         window.update_idletasks()  # Ensure window dimensions are calculated
         
         # Get window dimensions
@@ -89,16 +89,18 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         screen_width = window.winfo_screenwidth()
         screen_height = window.winfo_screenheight()
         
-        # Calculate position: center horizontally, near top with small margin
+        # Calculate position: center horizontally, closer to top with comfortable margin
         x = (screen_width - window_width) // 2
-        y = 50  # Fixed position: 50 pixels from top of screen
+        y = 65  # 65 pixels from top of screen
         
         # Ensure the window doesn't go off-screen
         x = max(0, x)
         y = max(0, y)
         
-        # Set the window position
+        # Set the window position - force it multiple times to ensure it takes effect
         window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        window.update()  # Force update
+        window.geometry(f"+{x}+{y}")  # Force position again after update
     
     def _setup_main_interface(self, root):
         """Setup the main tabbed interface with tool manager"""
@@ -381,7 +383,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         """Get default window size for a specific tool"""
         default_sizes = {
             "report_merger": (1150, 950),
-            "advanced_copy": (1175, 820),
+            "advanced_copy": (1175, 860),  # Increased from 820 to 860 for Cross-PBIP mode
             "pbip_layout_optimizer": (1130, 850),
             "report_cleanup": (1100, 1095),
             "column_width": (1200, 1035)
