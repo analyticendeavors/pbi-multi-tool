@@ -183,6 +183,9 @@ backup/
 backups/
 *_backup*
 *_copy*
+# Exception: Allow advanced_copy folder (tool name) and all its contents
+!advanced_copy/
+!advanced_copy/**
 exports/
 output/
 generated/
