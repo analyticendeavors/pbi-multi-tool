@@ -2,7 +2,7 @@
 
 **Professional Power BI toolkit with plugin architecture for comprehensive report management**
 
-![Version](https://img.shields.io/badge/version-1.1.1-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
@@ -49,6 +49,19 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Bookmark analysis** - Finds unused bookmarks and validates page references
 - **Visual filter hiding** - Option to hide all visual-level filters across the report
 - **Safe removal process** - Creates automatic backups and updates report.json references properly
+
+### 🔍 **Sensitivity Scanner Tool** ⭐ *New in v1.2.0*
+- **Pattern-based detection** - Scans TMDL files for sensitive content (PII, credentials, financial data)
+- **Risk assessment** - Categorizes findings as HIGH/MEDIUM/LOW with confidence scores
+- **Rule Manager** - Visual pattern editor with Simple and Advanced modes ⭐ *Enhanced in v1.2.0*
+- **Custom date patterns** - User-friendly date format converter (dd/mm/yyyy → regex) ⭐ *New in v1.2.0*
+- **Pattern testing** - Real-time regex validation with test input
+- **Pre-built templates** - Email, phone, credit card, IP, URLs, and 3 date formats
+- **Intelligent deduplication** - Combines multiple findings from same location (e.g., connection strings)
+- **Power BI recommendations** - Provides actionable, Power BI-specific guidance for remediation
+- **Export reports** - Generates detailed findings reports for compliance/audit
+- **Category scanning** - Full scan or targeted scans (tables, RLS roles, expressions)
+- **Static analysis** - Analyzes model structure, not actual data values
 
 ### 📊 **Table Column Widths Tool** 
 - **Visual scanning and analysis** - Discovers all Table (tableEx) and Matrix (pivotTable) visuals in PBIP reports
@@ -131,9 +144,16 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ## 🚀 Installation & Quick Start
 
+### **Option 1: Standalone Application (GitHub Releases)**
 1. **Download** `AE Power BI Multi-Tool.exe` from the [Releases page](../../releases)
 2. **Run directly** - no installation required
 3. **Launch** and select your tool from the tabbed interface
+
+### **Option 2: Power BI External Tool Integration**
+For the installer that integrates with Power BI Desktop's External Tools ribbon:
+- **Download** from [Analytic Endeavors External Tools](https://analyticendeavors.com/external-tools-and-software)
+- This version appears directly in Power BI Desktop's External Tools tab
+- Provides seamless, one-click access from within Power BI Desktop
 
 ---
 
@@ -240,6 +260,9 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ## ❓ Frequently Asked Questions
 
+### **Q: What's new in v1.2.0?**
+**A:** Version 1.2.0 introduces the brand new **Sensitivity Scanner Tool** for detecting sensitive content in Power BI semantic models before sharing with LLMs or external parties. It scans TMDL files for PII, credentials, financial data, and infrastructure details with intelligent deduplication and Power BI-specific remediation recommendations.
+
 ### **Q: What's new in v1.1.1?**
 **A:** Version 1.1.1 significantly enhances the Advanced Copy Tool (formerly "Advanced Page Copy"). It now supports multi-page copying within or between PBIPs, automatic bookmark and action reassignment, and introduces a brand new Bookmark + Popup Copier for copying bookmarks with their associated popup visuals.
 
@@ -309,7 +332,7 @@ This tool suite **ONLY** works with **PBIP files** in the enhanced report format
 
 ### **Getting Help**
 - 📚 **Documentation**: Check our [Wiki](../../wiki) for detailed tool guides
-- 📋 **Release Notes**: See [VERSION_1.1.1_RELEASE_NOTES.md](VERSION_1.1.1_RELEASE_NOTES.md) for latest updates
+- 📋 **Release Notes**: See [VERSION_1.2.0_RELEASE_NOTES.md](Release MDs/VERSION_1.2.0_RELEASE_NOTES.md) for latest updates
 - 🐛 **Bug Reports**: Use [Issues](../../issues) to report problems
 - 💡 **Feature Requests**: Submit via [Issues](../../issues) with enhancement label
 - 🌐 **Professional Support**: [Analytic Endeavors](https://www.analyticendeavors.com)
@@ -362,7 +385,22 @@ This software is released under the MIT License. See [LICENSE](LICENSE.txt) for 
 
 ## 🔄 Version History
 
-### **v1.1.1 - Advanced Copy Enhancement Edition** ⭐ *Current*
+### **v1.2.0 - Sensitivity Scanner Edition** ⭐ *Current*
+- ✅ **NEW: Sensitivity Scanner Tool** - Comprehensive TMDL scanning for sensitive data
+- ✅ **Pattern-based detection** - 50+ patterns for PII, credentials, financial data, infrastructure
+- ✅ **Rule Manager** - Visual pattern editor with Simple and Advanced modes
+- ✅ **Custom Date Patterns** - User-friendly date format converter (dd/mm/yyyy → regex)
+- ✅ **Pre-built Templates** - 8 ready-to-use patterns (email, phone, credit card, IP, URLs, 3 date formats)
+- ✅ **Pattern Testing** - Real-time regex validation with test input
+- ✅ **Intelligent deduplication** - Combines duplicate findings from same location
+- ✅ **Risk assessment** - HIGH/MEDIUM/LOW categorization with confidence scores
+- ✅ **Power BI recommendations** - Actionable, Power BI-specific remediation guidance
+- ✅ **Compact responsive UI** - Side-by-side Details and Log panels with 60:40 split
+- ✅ **Optimized Rule Manager layout** - 1035px width, fixed 425px pattern list, smart scrolling
+- ✅ **Export functionality** - Generate detailed findings reports
+- 🐛 **Bug fixes** - Fixed enum category validation, PBIP folder detection, export dialog errors
+
+### **v1.1.1 - Advanced Copy Enhancement Edition**
 - ✅ **Enhanced page copying** - Multi-page support within/across PBIPs
 - ✅ **Bookmark management** - Automatic bookmark and bookmark group duplication
 - ✅ **Action reassignment** - All action references automatically updated to copied bookmarks

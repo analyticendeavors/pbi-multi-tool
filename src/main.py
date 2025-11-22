@@ -30,7 +30,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         # Initialize with tool configuration
         config = ToolConfiguration(
             name="Enhanced Power BI Report Tools",
-            version="1.1.1",
+            version="1.2.0",
             description="Professional suite for Power BI report management with plugin architecture",
             author="Reid Havens",
             website="https://www.analyticendeavors.com",
@@ -68,7 +68,7 @@ class EnhancedPowerBIReportToolsApp(EnhancedBaseExternalTool):
         root.title(f"Enhanced Power BI Report Tools v{self.config.version}")
         
         # Set initial size but don't position yet
-        root.geometry("1150x950")  # Start with Report Merger size since it's the first tab
+        root.geometry("1100x950")  # Reduced width from 1150 to 1100 (50px narrower)
         
         self._setup_main_interface(root)
         
