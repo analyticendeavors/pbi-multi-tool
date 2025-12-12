@@ -8,6 +8,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import json
 import re
+import sys
+import os
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -24,9 +26,9 @@ class PatternManager:
         self.pattern_detector = pattern_detector
         self.on_patterns_updated = on_patterns_updated_callback
         
-        # Paths
-        self.original_patterns_file = Path(__file__).parent.parent.parent.parent / "data" / "sensitivity_patterns.json"
-        self.custom_patterns_file = Path(__file__).parent.parent.parent.parent / "data" / "sensitivity_patterns_custom.json"
+        # Paths - Handle both development and standalone .exe scenarios
+        self.original_patterns_file = self._get_bundled_patterns_path()
+        self.custom_patterns_file = self._get_writable_patterns_path()
         
         # Load current patterns
         self.patterns = self._load_current_patterns()
@@ -34,6 +36,39 @@ class PatternManager:
         
         # Create window
         self._create_window()
+    
+    def _get_bundled_patterns_path(self) -> Path:
+        """
+        Get path to bundled default patterns.
+        
+        Handles both development (source files) and PyInstaller (.exe) scenarios.
+        PyInstaller extracts data to a temporary folder accessible via sys._MEIPASS.
+        """
+        if getattr(sys, 'frozen', False):
+            # Running in PyInstaller bundle
+            base_path = Path(sys._MEIPASS)
+        else:
+            # Running in development
+            base_path = Path(__file__).parent.parent.parent.parent
+        
+        return base_path / "data" / "sensitivity_patterns.json"
+    
+    def _get_writable_patterns_path(self) -> Path:
+        """
+        Get path to writable custom patterns file.
+        
+        Uses AppData for standalone .exe to ensure write permissions.
+        In development, uses the data directory for convenience.
+        """
+        if getattr(sys, 'frozen', False):
+            # Running in PyInstaller bundle - use AppData
+            appdata = Path(os.environ.get('APPDATA', Path.home() / 'AppData' / 'Roaming'))
+            app_dir = appdata / 'AE Power BI Multi-Tool' / 'Sensitivity Scanner'
+            app_dir.mkdir(parents=True, exist_ok=True)
+            return app_dir / 'sensitivity_patterns_custom.json'
+        else:
+            # Running in development - use data directory
+            return Path(__file__).parent.parent.parent.parent / "data" / "sensitivity_patterns_custom.json"
     
     def _load_current_patterns(self) -> Dict[str, Any]:
         """Load current patterns."""
@@ -146,18 +181,19 @@ class PatternManager:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Enable mouse wheel scrolling ONLY when mouse is over canvas
+        # Enable mouse wheel scrolling for editor - bind to all widgets
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         
-        def _bind_mousewheel(event):
-            canvas.bind("<MouseWheel>", _on_mousewheel)
+        def _bind_to_mousewheel(widget):
+            """Recursively bind mouse wheel to widget and all its children."""
+            widget.bind("<MouseWheel>", _on_mousewheel)
+            for child in widget.winfo_children():
+                _bind_to_mousewheel(child)
         
-        def _unbind_mousewheel(event):
-            canvas.unbind("<MouseWheel>")
-        
-        canvas.bind("<Enter>", _bind_mousewheel)
-        canvas.bind("<Leave>", _unbind_mousewheel)
+        # Bind mousewheel to editor frame and all children
+        _bind_to_mousewheel(editor_frame)
+        canvas.bind("<MouseWheel>", _on_mousewheel)
         
         # Form fields
         self.form_vars = {}
@@ -446,8 +482,8 @@ class PatternManager:
         - yy: Year (2 digits)
         
         Examples:
-        'dd/mm/yyyy' -> r'\b(?:0?[1-9]|[12][0-9]|3[01])/(?:0?[1-9]|1[0-2])/\d{4}\b'
-        'mm-dd-yyyy' -> r'\b(?:0?[1-9]|1[0-2])-(?:0?[1-9]|[12][0-9]|3[01])-\d{4}\b'
+        'dd/mm/yyyy' -> r'\\b(?:0?[1-9]|[12][0-9]|3[01])/(?:0?[1-9]|1[0-2])/\\d{4}\\b'
+        'mm-dd-yyyy' -> r'\\b(?:0?[1-9]|1[0-2])-(?:0?[1-9]|[12][0-9]|3[01])-\\d{4}\\b'
         """
         # Define regex components
         replacements = {
@@ -621,7 +657,8 @@ class PatternManager:
         
         # Reset and Export with same style as right side
         ttk.Button(left, text="🔄 Reset to Defaults", command=self._reset).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(left, text="📤 Export", command=self._export).pack(side=tk.LEFT)
+        ttk.Button(left, text="📤 Export", command=self._export).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(left, text="📥 Import", command=self._import).pack(side=tk.LEFT)
         
         right = ttk.Frame(btn_frame)
         right.pack(side=tk.RIGHT)
@@ -867,6 +904,64 @@ class PatternManager:
                 messagebox.showinfo("Success", f"Exported to:\n{path}")
             except Exception as e:
                 messagebox.showerror("Error", f"Export failed: {e}")
+    
+    def _import(self):
+        """Import patterns from JSON file."""
+        path = filedialog.askopenfilename(
+            title="Import Patterns",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")]
+        )
+        
+        if not path:
+            return
+        
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                imported = json.load(f)
+            
+            # Validate structure
+            if 'patterns' not in imported:
+                messagebox.showerror("Invalid File", "File must contain 'patterns' key with high_risk, medium_risk, and low_risk arrays.")
+                return
+            
+            # Ask user how to handle import
+            result = messagebox.askyesnocancel(
+                "Import Mode",
+                "How would you like to import?\n\n"
+                "YES = Replace all patterns with imported\n"
+                "NO = Merge (add new patterns, keep existing)\n"
+                "CANCEL = Abort import"
+            )
+            
+            if result is None:  # Cancel
+                return
+            
+            if result:  # Yes = Replace
+                self.patterns = imported
+                mode = "replaced"
+            else:  # No = Merge
+                added_count = 0
+                for risk_level in ['high_risk', 'medium_risk', 'low_risk']:
+                    existing_ids = {p['id'] for p in self.patterns['patterns'].get(risk_level, [])}
+                    for pattern in imported['patterns'].get(risk_level, []):
+                        if pattern['id'] not in existing_ids:
+                            self.patterns['patterns'][risk_level].append(pattern)
+                            added_count += 1
+                mode = f"merged ({added_count} new patterns added)"
+            
+            self._save_patterns()
+            self._populate_tree()
+            self._clear_form()
+            
+            # Update count
+            count = sum(len(self.patterns['patterns'].get(r, [])) 
+                       for r in ['high_risk', 'medium_risk', 'low_risk'])
+            messagebox.showinfo("Success", f"Import complete!\nMode: {mode}\nTotal patterns: {count}")
+            
+        except json.JSONDecodeError as e:
+            messagebox.showerror("Invalid JSON", f"File is not valid JSON:\n{e}")
+        except Exception as e:
+            messagebox.showerror("Import Error", f"Failed to import:\n{e}")
     
     def _save_close(self):
         """Save and close."""

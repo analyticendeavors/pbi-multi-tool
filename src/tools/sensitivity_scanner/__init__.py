@@ -11,7 +11,7 @@ This tool scans Power BI semantic models (TMDL files) for sensitive content incl
 Built by Reid Havens of Analytic Endeavors
 """
 
-from .sensitivity_scanner_tool import SensitivityScannerTool
+from tools.sensitivity_scanner.sensitivity_scanner_tool import SensitivityScannerTool
 
 __all__ = ['SensitivityScannerTool']
 __version__ = '1.0.0'

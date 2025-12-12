@@ -12,6 +12,8 @@ This module provides the PatternDetector class which:
 import re
 import json
 import logging
+import sys
+import os
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from .models import (
@@ -56,15 +58,30 @@ class PatternDetector:
         self._load_patterns()
     
     def _get_default_patterns_file(self) -> Path:
-        """Get the default patterns file location."""
-        # Assuming this file is in src/tools/sensitivity_scanner/logic/
-        # Navigate up to src/data/sensitivity_patterns.json
-        current_file = Path(__file__).resolve()
-        src_dir = current_file.parent.parent.parent.parent
+        """
+        Get the default patterns file location.
         
-        # Check for custom patterns first
-        custom_file = src_dir / "data" / "sensitivity_patterns_custom.json"
-        default_file = src_dir / "data" / "sensitivity_patterns.json"
+        Handles both development and standalone .exe scenarios.
+        Checks for custom patterns in writable location first.
+        """
+        # Get bundled default patterns path
+        if getattr(sys, 'frozen', False):
+            # Running in PyInstaller bundle
+            base_path = Path(sys._MEIPASS)
+        else:
+            # Running in development
+            base_path = Path(__file__).parent.parent.parent.parent
+        
+        default_file = base_path / "data" / "sensitivity_patterns.json"
+        
+        # Check for custom patterns in writable location
+        if getattr(sys, 'frozen', False):
+            # Running in PyInstaller bundle - check AppData
+            appdata = Path(os.environ.get('APPDATA', Path.home() / 'AppData' / 'Roaming'))
+            custom_file = appdata / 'AE Power BI Multi-Tool' / 'Sensitivity Scanner' / 'sensitivity_patterns_custom.json'
+        else:
+            # Running in development - check data directory
+            custom_file = base_path / "data" / "sensitivity_patterns_custom.json"
         
         if custom_file.exists():
             logger.info(f"Using custom patterns file: {custom_file}")
