@@ -204,3 +204,6 @@ secrets.json
 api_keys.json
 connection_strings.json
 *.secret
+
+# Claude AI
+.claude/
