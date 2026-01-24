@@ -80,12 +80,6 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Content-type detection** - Intelligent recognition of dates, currency, hierarchy levels, and data patterns
 - **Selective application** - Choose individual visuals, multiple visuals, or apply to all tables/matrices
 
-### **Plugin Architecture**
-- **Automatic tool discovery** and registration
-- **Modular component system** with composition patterns
-- **Extensible framework** for custom tools
-- **Dynamic tab management** with context-sensitive help
-
 ---
 
 ## Enhanced Features & Intelligence
@@ -104,12 +98,6 @@ The **AE Power BI Multi-Tool** is a professional desktop application suite that 
 - **Enhanced minimum widths** based on content and visual type
 - **Currency-specific adjustments** for better readability
 - **Date format intelligence** with complex pattern recognition
-
-### **Modern Plugin System**
-- Automatic tool discovery from `/tools` directory
-- Dynamic tab creation and management
-- Component-based architecture for maximum reusability
-- Enhanced error handling with comprehensive logging
 
 ### **Enterprise-Grade Security**
 - Professional security architecture
@@ -235,37 +223,6 @@ For the installer that integrates with Power BI Desktop's External Tools ribbon:
 
 ---
 
-## Architecture Overview
-
-### **Plugin-Based Design**
-```
-AE Multi-Tool Structure:
-   +-- main.py (Tool Manager & Main Interface)
-   +-- core/ (Shared Components)
-   |   +-- tool_manager.py (Auto-discovery)
-   |   +-- enhanced_base_tool.py (Tool framework)
-   |   +-- ui_base.py (UI components)
-   |   +-- constants.py (Shared constants)
-   +-- tools/ (Plugin Tools)
-       +-- report_merger/
-       +-- advanced_copy/ (Enhanced in v1.1.1)
-       +-- pbip_layout_optimizer/
-       +-- report_cleanup/
-       +-- column_width/
-       +-- sensitivity_scanner/ (New in v1.2.0)
-```
-
-### **Component Composition**
-- **ValidationComponent**: Input validation and file checking
-- **FileInputComponent**: Path handling and file operations
-- **ThreadingComponent**: Background processing with proper closures
-- **ProgressComponent**: User feedback and progress indication
-- **BookmarkMapper**: Advanced bookmark tracking and action reassignment
-- **PopupHandler**: Popup visual dependency management
-- **IntelligentSizing**: Advanced width calculations with content-type detection
-
----
-
 ## Frequently Asked Questions
 
 ### **Q: What's new in v2.0.0?**
@@ -313,11 +270,6 @@ AE Multi-Tool Structure:
 - Check that all bookmarks were properly selected during copy operation
 - Verify source report bookmarks are not corrupted
 
-**"No tools discovered"**
-- Check that `/tools` directory exists and contains tool modules
-- Verify Python import paths are correct
-- Run dependency checks to verify installations
-
 ---
 
 ## Security & Privacy
@@ -345,13 +297,6 @@ AE Multi-Tool Structure:
 - **Feature Requests**: Submit via [Issues](../../issues) with enhancement label
 - **Professional Support**: [Analytic Endeavors](https://www.analyticendeavors.com)
 - **Direct Contact**: support@analyticendeavors.com
-
-### **Contributing**
-We welcome contributions to the tool suite! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- Adding new tools to the plugin system
-- Enhancing existing components
-- Improving the AI intelligence systems
-- Documentation updates
 
 ---
 
